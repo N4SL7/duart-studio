@@ -1,0 +1,27 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block titulo %}DUART-STUDIO{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'taller_motos/estilos.css' %}">
+</head>
+<body>
+  <header class="navbar">
+    <a class="marca" href="{% url 'taller_motos:index' %}">🏍 DUART-STUDIO</a>
+    <nav>
+      <a href="{% url 'taller_motos:index' %}">Inicio</a>
+      <a href="{% url 'taller_motos:galeria' %}">Galería</a>
+      <a href="{% url 'taller_motos:contacto' %}">Agendar cita</a>
+      <a href="{% url 'taller_motos:servicio_list' %}">Administrar servicios</a>
+    </nav>
+  </header>
+
+  {% block contenido %}{% endblock %}
+
+  <footer>
+    DUART-STUDIO &middot; Pintura y personalización de motocicletas &middot; Tunjuelito, Bogotá &middot; Todos los derechos reservados
+  </footer>
+</body>
+</html>

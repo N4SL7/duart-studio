@@ -1,0 +1,41 @@
+{% extends "taller_motos/base.html" %}
+{% block titulo %}Agendar cita - DUART-STUDIO{% endblock %}
+
+{% block contenido %}
+<section class="seccion">
+  <h2>Agenda tu cita</h2>
+
+  {% if messages %}
+  <div class="mensajes">
+    {% for message in messages %}
+      <div class="mensaje {{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <form class="formulario" method="post">
+    {% csrf_token %}
+    <label for="nombre_cliente">Nombre completo</label>
+    <input type="text" id="nombre_cliente" name="nombre_cliente" required>
+
+    <label for="telefono">Teléfono</label>
+    <input type="tel" id="telefono" name="telefono" required>
+
+    <label for="servicio">Servicio</label>
+    <select id="servicio" name="servicio">
+      <option value="">-- Selecciona un servicio --</option>
+      {% for servicio in servicios %}
+        <option value="{{ servicio.id }}">{{ servicio.nombre }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="fecha_deseada">Fecha deseada</label>
+    <input type="date" id="fecha_deseada" name="fecha_deseada" required>
+
+    <label for="mensaje">Mensaje (opcional)</label>
+    <textarea id="mensaje" name="mensaje" rows="4"></textarea>
+
+    <button class="btn" type="submit">Enviar solicitud</button>
+  </form>
+</section>
+{% endblock %}

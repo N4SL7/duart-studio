@@ -1,0 +1,46 @@
+@startuml despliegue
+!include style.iuml
+title Diagrama de despliegue – Plataforma web DUART-STUDIO
+
+node "PC del desarrollador" as PC <<device>> {
+  node "Docker Engine" as DE <<executionEnvironment>> {
+    node "Contenedor Django + SQLite" as C1 <<container>>
+    node "Contenedor Node.js" as C2 <<container>>
+  }
+  artifact "docker-compose.yml" as DC
+}
+
+node "GitHub\n(repositorio)" as GH <<device>>
+
+node "Navegador\n(móvil / PC)" as NAV <<device>>
+
+node "Vercel" as VC <<device>> {
+  node "Vercel Function Python" as VFP <<executionEnvironment>> {
+    artifact "backend Django" as ART_DJ
+  }
+  node "Vercel Function Node.js" as VFN <<executionEnvironment>> {
+    artifact "servicio Node.js" as ART_ND
+  }
+}
+
+database "PostgreSQL\n(Neon)" as PG
+
+node "API de IA (LLM)" as LLM <<external>>
+node "WhatsApp" as WA <<external>>
+node "Cloudinary" as CLD <<external>>
+node "Correo SMTP" as SMTP <<external>>
+
+DC .. DE
+C1 -right- C2 : REST / webhook
+PC ..> GH : git push
+GH ..> VC : despliegue automático
+
+NAV -- VFP : HTTPS
+NAV -- VFN : WSS
+VFP -- VFN : REST / webhook
+VFP -- PG : SQL / TLS
+VFP -- CLD : HTTPS
+VFN -- LLM : HTTPS
+VFN -- WA : HTTPS
+VFN -- SMTP : SMTP
+@enduml

@@ -1,0 +1,47 @@
+{% extends "taller_motos/base.html" %}
+{% block titulo %}Administrar servicios - DUART-STUDIO{% endblock %}
+
+{% block contenido %}
+<section class="seccion">
+  <h2>Administrar servicios</h2>
+
+  {% if messages %}
+  <div class="mensajes">
+    {% for message in messages %}
+      <div class="mensaje {{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <a class="btn" href="{% url 'taller_motos:servicio_create' %}">+ Nuevo servicio</a>
+
+  {% if servicios %}
+  <table class="tabla">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Precio</th>
+        <th>Duración</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for servicio in servicios %}
+      <tr>
+        <td>{{ servicio.nombre }}</td>
+        <td>${{ servicio.precio }}</td>
+        <td>{{ servicio.duracion_estimada }}</td>
+        <td>
+          <a href="{% url 'taller_motos:servicio_detail' servicio.id %}">Ver</a> ·
+          <a href="{% url 'taller_motos:servicio_update' servicio.id %}">Editar</a> ·
+          <a href="{% url 'taller_motos:servicio_delete' servicio.id %}">Eliminar</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>Aún no hay servicios registrados.</p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,57 @@
+@startuml componentes
+!include style.iuml
+skinparam componentStyle uml2
+skinparam nodesep 40
+skinparam ranksep 55
+title Diagrama de componentes – Plataforma web DUART-STUDIO
+
+component "Interfaz web\n(navegador)" as UI
+
+component "Backend Django" as DJ {
+  interface "HTTPS\n(páginas)" as I_HTTP
+  interface "API REST" as I_API
+  component "Apps de dominio\n(sitio, tienda, citas,\nclientes, proceso, inventario)" as APPS
+  component "Django Admin" as ADM
+  component "API REST\n(Django REST Framework)" as API
+  component "ORM" as ORM
+}
+
+component "Servicio Node.js (Express + Socket.IO)" as NODE {
+  interface "WebSocket" as I_WS
+  interface "Webhook" as I_HOOK
+  component "Gateway de chat" as GW
+  component "Servicio de\nnotificaciones" as NOTI
+  component "Asistente IA\n(motor de intenciones\n+ conector LLM)" as AI
+}
+
+database "Base de datos\nSQLite (dev) /\nPostgreSQL (prod)" as DB
+
+component "API de IA (LLM)" as LLM <<external>>
+component "WhatsApp" as WA <<external>>
+component "Cloudinary" as CLD <<external>>
+component "Correo SMTP" as SMTP <<external>>
+
+I_HTTP -- APPS
+I_HTTP -- ADM
+I_API -- API
+I_WS -- GW
+I_HOOK -- NOTI
+
+UI ..> I_HTTP : HTTPS
+UI ..> I_WS : WebSocket
+
+APPS --> ORM
+ADM --> ORM
+API --> ORM
+ORM ..> DB : SQL
+
+GW --> AI
+AI ..> I_API : API REST\n(estado de la moto, FAQ)
+APPS ..> I_HOOK : webhook\n(cambio de etapa)
+
+AI ..> LLM : HTTPS
+GW ..> WA : derivar a\natención humana
+APPS ..> WA : pedido de\nla tienda
+APPS ..> CLD : imágenes\n(HTTPS)
+NOTI ..> SMTP : avisos\npor correo
+@enduml

@@ -1,0 +1,23 @@
+# Python / Django
+__pycache__/
+*.py[cod]
+*.sqlite3
+db.sqlite3
+media/
+staticfiles/
+
+# Entornos virtuales y variables de entorno
+.venv/
+venv/
+env/
+.env
+
+# Node.js (servicio de la Entrega 3)
+node_modules/
+
+# Sistema operativo y editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+~$*

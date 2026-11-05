@@ -1,0 +1,15 @@
+{% extends "taller_motos/base.html" %}
+{% block titulo %}{{ servicio.nombre }} - DUART-STUDIO{% endblock %}
+
+{% block contenido %}
+<section class="seccion">
+  <h2>{{ servicio.nombre }}</h2>
+  {% if servicio.imagen_url %}
+    <img src="{{ servicio.imagen_url }}" alt="{{ servicio.nombre }}" style="max-width:100%;border-radius:10px;">
+  {% endif %}
+  <p>{{ servicio.descripcion }}</p>
+  <p class="precio">Precio: ${{ servicio.precio }}</p>
+  <p>Duración estimada: {{ servicio.duracion_estimada }}</p>
+  <a class="btn" href="{% url 'taller_motos:contacto' %}">Agendar este servicio</a>
+</section>
+{% endblock %}

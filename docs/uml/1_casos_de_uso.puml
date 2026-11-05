@@ -1,0 +1,79 @@
+@startuml casos_de_uso
+!include style.iuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam nodesep 12
+skinparam ranksep 60
+title Diagrama de casos de uso – Plataforma web DUART-STUDIO
+
+actor "Visitante" as V
+actor "Cliente\nregistrado" as C
+actor "Administrador\ndel taller" as A
+actor "«sistema»\nServicio de IA" as IA
+actor "«sistema»\nWhatsApp" as WA
+
+V <|-- C
+
+rectangle "Sistema DUART-STUDIO" {
+  usecase "Consultar servicios y precios" as UC1
+  usecase "Ver galería de trabajos y noticias" as UC2
+  usecase "Solicitar cita / formulario de contacto" as UC7
+  usecase "Registrarse (con autorización de datos)" as UC8
+  usecase "Conversar con el asistente virtual (IA)" as UC3
+  usecase "Derivar a atención humana" as UC4
+  usecase "Explorar catálogo de la tienda" as UC5
+  usecase "Enviar pedido por WhatsApp" as UC6
+
+  usecase "Registrar motocicleta" as UC10
+  usecase "Consultar etapa del proceso (Mi Proceso)" as UC11
+  usecase "Iniciar sesión (cliente)" as UC9
+  usecase "Recibir notificación de cambio de etapa" as UC12
+  usecase "Notificar cambio de etapa" as UC13
+
+  usecase "Actualizar etapa / finalizar trabajo" as UC15
+  usecase "Iniciar sesión administrativa" as UC14
+  usecase "Gestionar vehículos en taller" as UC16
+  usecase "Gestionar contenidos\n(servicios, trabajos, noticias, productos)" as UC17
+  usecase "Gestionar citas" as UC18
+  usecase "Gestionar preguntas frecuentes del asistente" as UC19
+  usecase "Gestionar insumos y modelos de moto" as UC20
+  usecase "Definir plantilla de insumos por modelo y etapa" as UC21
+  usecase "Generar solicitud de materiales" as UC22
+  usecase "Consultar plantilla de insumos" as UC23
+  usecase "Cambiar estado de la solicitud" as UC24
+}
+
+V -- UC1
+V -- UC2
+V -- UC7
+V -- UC8
+V -- UC3
+V -- UC5
+
+C -- UC10
+C -- UC11
+C -- UC12
+
+A -- UC15
+A -- UC14
+A -- UC16
+A -- UC17
+A -- UC18
+A -- UC19
+A -- UC20
+A -- UC21
+A -- UC22
+A -- UC24
+
+UC3 <.. UC4 : <<extend>>
+UC5 <.. UC6 : <<extend>>
+UC10 ..> UC9 : <<include>>
+UC11 ..> UC9 : <<include>>
+UC15 ..> UC13 : <<include>>
+UC13 -- UC12
+UC22 ..> UC23 : <<include>>
+
+UC3 -- IA
+UC4 -- WA
+UC6 -- WA
+@enduml

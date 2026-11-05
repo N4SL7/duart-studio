@@ -1,0 +1,35 @@
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam ArrowColor #1F3864
+skinparam ArrowFontSize 11
+skinparam usecase {
+  BackgroundColor #DAE8FC
+  BorderColor #6C8EBF
+}
+skinparam actorBorderColor #1F3864
+skinparam rectangle {
+  BorderColor #1F3864
+  BackgroundColor white
+}
+skinparam component {
+  BackgroundColor #DAE8FC
+  BorderColor #6C8EBF
+}
+skinparam node {
+  BackgroundColor #F5F8FD
+  BorderColor #1F3864
+}
+skinparam database {
+  BackgroundColor #FFF2CC
+  BorderColor #D6B656
+}
+skinparam artifact {
+  BackgroundColor white
+  BorderColor #6C8EBF
+}
+skinparam interface {
+  BackgroundColor white
+  BorderColor #1F3864
+}

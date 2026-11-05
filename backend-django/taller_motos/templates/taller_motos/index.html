@@ -1,0 +1,58 @@
+{% extends "taller_motos/base.html" %}
+{% block titulo %}Inicio - DUART-STUDIO{% endblock %}
+
+{% block contenido %}
+<section class="hero">
+  <h1>Tu moto, con el estilo que imaginas</h1>
+  <p>Pintura, personalización y acabados para todas las marcas. Antes no teníamos sitio web ni forma de mostrar nuestro trabajo: ahora sí.</p>
+  <a class="btn" href="{% url 'taller_motos:contacto' %}">Agendar una cita</a>
+</section>
+
+<section class="seccion">
+  <h2>Nuestros servicios</h2>
+  {% if servicios %}
+  <div class="grid">
+    {% for servicio in servicios %}
+    <div class="tarjeta">
+      {% if servicio.imagen_url %}
+        <img src="{{ servicio.imagen_url }}" alt="{{ servicio.nombre }}">
+      {% else %}
+        <img src="https://placehold.co/400x200?text=Servicio" alt="{{ servicio.nombre }}">
+      {% endif %}
+      <div class="contenido">
+        <h3>{{ servicio.nombre }}</h3>
+        <p>{{ servicio.descripcion|truncatewords:15 }}</p>
+        <p class="precio">${{ servicio.precio }} &middot; {{ servicio.duracion_estimada }}</p>
+        <a class="btn" href="{% url 'taller_motos:servicio_detail' servicio.id %}">Ver detalle</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p>Aún no hay servicios cargados. Agrégalos desde el panel de administración.</p>
+  {% endif %}
+</section>
+
+<section class="seccion">
+  <h2>Trabajos recientes</h2>
+  {% if motos %}
+  <div class="grid">
+    {% for moto in motos %}
+    <div class="tarjeta">
+      {% if moto.imagen_url %}
+        <img src="{{ moto.imagen_url }}" alt="{{ moto }}">
+      {% else %}
+        <img src="https://placehold.co/400x200?text=Moto" alt="{{ moto }}">
+      {% endif %}
+      <div class="contenido">
+        <h3>{{ moto.marca }} {{ moto.modelo }} ({{ moto.anio }})</h3>
+        <p>{{ moto.descripcion|truncatewords:15 }}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p>Aún no hay motos en la galería.</p>
+  {% endif %}
+</section>
+{% endblock %}

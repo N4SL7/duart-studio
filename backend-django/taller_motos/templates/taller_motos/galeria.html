@@ -1,0 +1,27 @@
+{% extends "taller_motos/base.html" %}
+{% block titulo %}Galería - DUART-STUDIO{% endblock %}
+
+{% block contenido %}
+<section class="seccion">
+  <h2>Galería de motos atendidas</h2>
+  {% if motos %}
+  <div class="grid">
+    {% for moto in motos %}
+    <div class="tarjeta">
+      {% if moto.imagen_url %}
+        <img src="{{ moto.imagen_url }}" alt="{{ moto }}">
+      {% else %}
+        <img src="https://placehold.co/400x200?text=Moto" alt="{{ moto }}">
+      {% endif %}
+      <div class="contenido">
+        <h3>{{ moto.marca }} {{ moto.modelo }} ({{ moto.anio }})</h3>
+        <p>{{ moto.descripcion }}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p>Aún no hay motos registradas en la galería.</p>
+  {% endif %}
+</section>
+{% endblock %}

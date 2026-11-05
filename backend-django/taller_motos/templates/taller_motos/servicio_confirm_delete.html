@@ -1,0 +1,15 @@
+{% extends "taller_motos/base.html" %}
+{% block titulo %}Eliminar servicio - DUART-STUDIO{% endblock %}
+
+{% block contenido %}
+<section class="seccion">
+  <h2>Eliminar servicio</h2>
+  <p>¿Seguro que deseas eliminar el servicio <strong>{{ servicio.nombre }}</strong>? Esta acción no se puede deshacer.</p>
+
+  <form method="post">
+    {% csrf_token %}
+    <button class="btn" type="submit">Sí, eliminar</button>
+    <a class="btn" href="{% url 'taller_motos:servicio_list' %}">Cancelar</a>
+  </form>
+</section>
+{% endblock %}

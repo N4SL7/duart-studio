@@ -1,0 +1,57 @@
+[
+  {
+    "model": "taller_motos.servicio",
+    "pk": 1,
+    "fields": {
+      "nombre": "Pintura completa",
+      "descripcion": "Pintura total de carenaje y tanque: alistamiento, lijado, preparación de pintura, aplicación, detallado y pulido.",
+      "precio": "850000.00",
+      "duracion_estimada": "5 a 7 días",
+      "imagen_url": ""
+    }
+  },
+  {
+    "model": "taller_motos.servicio",
+    "pk": 2,
+    "fields": {
+      "nombre": "Personalización con diseño",
+      "descripcion": "Diseño exclusivo con gráficos, degradados o aerografía según la idea del cliente.",
+      "precio": "1200000.00",
+      "duracion_estimada": "7 a 10 días",
+      "imagen_url": ""
+    }
+  },
+  {
+    "model": "taller_motos.servicio",
+    "pk": 3,
+    "fields": {
+      "nombre": "Retoque y pulido",
+      "descripcion": "Corrección de rayones y desgastes, pulido y brillo final para recuperar el acabado.",
+      "precio": "250000.00",
+      "duracion_estimada": "1 a 2 días",
+      "imagen_url": ""
+    }
+  },
+  {
+    "model": "taller_motos.moto",
+    "pk": 1,
+    "fields": {
+      "marca": "Yamaha",
+      "modelo": "FZ",
+      "anio": 2022,
+      "imagen_url": "",
+      "descripcion": "Pintura completa en azul mate con detalles en negro brillante."
+    }
+  },
+  {
+    "model": "taller_motos.moto",
+    "pk": 2,
+    "fields": {
+      "marca": "Honda",
+      "modelo": "CB 190R",
+      "anio": 2021,
+      "imagen_url": "",
+      "descripcion": "Personalización con gráficos racing y acabado perlado."
+    }
+  }
+]

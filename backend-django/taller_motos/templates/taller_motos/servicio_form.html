@@ -1,0 +1,15 @@
+{% extends "taller_motos/base.html" %}
+{% block titulo %}{{ modo }} servicio - DUART-STUDIO{% endblock %}
+
+{% block contenido %}
+<section class="seccion">
+  <h2>{{ modo }} servicio</h2>
+
+  <form class="formulario" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn" type="submit">Guardar</button>
+    <a class="btn" href="{% url 'taller_motos:servicio_list' %}">Cancelar</a>
+  </form>
+</section>
+{% endblock %}
