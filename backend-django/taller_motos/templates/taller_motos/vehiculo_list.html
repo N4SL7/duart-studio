@@ -1,0 +1,49 @@
+{% extends "taller_motos/base.html" %}
+{% block titulo %}Vehículos en taller - DUART-STUDIO{% endblock %}
+
+{% block contenido %}
+<section class="seccion">
+  <h2>Vehículos en taller</h2>
+
+  <form class="filtros" method="get">
+    {{ filtro.q }} {{ filtro.etapa }} {{ filtro.cliente }}
+    <button class="btn btn-sm" type="submit">Filtrar</button>
+    <a href="{% url 'taller_motos:vehiculo_list' %}">Limpiar</a>
+  </form>
+
+  <a class="btn" href="{% url 'taller_motos:vehiculo_create' %}">+ Nuevo vehículo</a>
+
+  {% if vehiculos %}
+  <table class="tabla tabla-ancha">
+    <thead>
+      <tr>
+        <th>Placa</th>
+        <th>Moto</th>
+        <th>Cliente</th>
+        <th>Servicio</th>
+        <th>Etapa</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for v in vehiculos %}
+      <tr>
+        <td><span class="placa">{{ v.placa }}</span></td>
+        <td>{{ v.marca }} {{ v.modelo }}</td>
+        <td>{{ v.cliente.get_full_name|default:v.cliente.username }}</td>
+        <td>{{ v.servicio|default:"—" }}</td>
+        <td><span class="etiqueta etapa-{{ v.etapa }}">{{ v.get_etapa_display }}</span></td>
+        <td>
+          <a href="{% url 'taller_motos:vehiculo_detail' v.id %}">Ver</a> ·
+          <a href="{% url 'taller_motos:vehiculo_update' v.id %}">Editar</a> ·
+          <a href="{% url 'taller_motos:vehiculo_delete' v.id %}">Eliminar</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No hay vehículos que coincidan con el filtro.</p>
+  {% endif %}
+</section>
+{% endblock %}

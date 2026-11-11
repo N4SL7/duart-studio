@@ -1,0 +1,15 @@
+{% extends "taller_motos/base.html" %}
+{% block titulo %}Eliminar vehículo - DUART-STUDIO{% endblock %}
+
+{% block contenido %}
+<section class="seccion">
+  <h2>Eliminar vehículo</h2>
+  <p>¿Seguro que deseas eliminar <strong>{{ vehiculo }}</strong> de {{ vehiculo.cliente.get_full_name|default:vehiculo.cliente.username }}? También se borrará su historial de etapas.</p>
+
+  <form method="post">
+    {% csrf_token %}
+    <button class="btn" type="submit">Sí, eliminar</button>
+    <a class="btn" href="{% url 'taller_motos:vehiculo_detail' vehiculo.id %}">Cancelar</a>
+  </form>
+</section>
+{% endblock %}

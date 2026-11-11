@@ -1,0 +1,40 @@
+{% extends "taller_motos/base.html" %}
+{% block titulo %}Citas - DUART-STUDIO{% endblock %}
+
+{% block contenido %}
+<section class="seccion">
+  <h2>Citas solicitadas</h2>
+
+  {% if citas %}
+  <table class="tabla tabla-ancha">
+    <thead>
+      <tr><th>Fecha deseada</th><th>Cliente</th><th>Teléfono</th><th>Servicio</th><th>Estado</th></tr>
+    </thead>
+    <tbody>
+      {% for cita in citas %}
+      <tr>
+        <td>{{ cita.fecha_deseada|date:"d/m/Y" }}</td>
+        <td>{{ cita.nombre_cliente }}</td>
+        <td>{{ cita.telefono }}</td>
+        <td>{{ cita.servicio|default:"—" }}</td>
+        <td>
+          <form class="form-linea" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="cita_id" value="{{ cita.id }}">
+            <select name="estado" onchange="this.form.submit()">
+              {% for valor, nombre in estados %}
+                <option value="{{ valor }}" {% if cita.estado == valor %}selected{% endif %}>{{ nombre }}</option>
+              {% endfor %}
+            </select>
+            <noscript><button type="submit">Guardar</button></noscript>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No hay citas registradas.</p>
+  {% endif %}
+</section>
+{% endblock %}

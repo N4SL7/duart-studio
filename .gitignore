@@ -2,7 +2,8 @@
 __pycache__/
 *.py[cod]
 *.sqlite3
-db.sqlite3
+# La base SQLite de desarrollo se versiona con datos de demostración (Entrega 2).
+!backend-django/db.sqlite3
 media/
 staticfiles/
 

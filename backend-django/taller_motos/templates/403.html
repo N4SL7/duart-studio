@@ -1,0 +1,10 @@
+{% extends "taller_motos/base.html" %}
+{% block titulo %}Acceso denegado - DUART-STUDIO{% endblock %}
+
+{% block contenido %}
+<section class="seccion centrado">
+  <h2>Acceso denegado</h2>
+  <p>Tu rol ({{ rol_usuario }}) no tiene permiso para ver esta página.</p>
+  <a class="btn" href="{% url 'taller_motos:inicio_por_rol' %}">Volver a mi inicio</a>
+</section>
+{% endblock %}

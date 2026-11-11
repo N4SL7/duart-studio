@@ -1,0 +1,64 @@
+@startuml secuencia_crud_vehiculos
+!include style.iuml
+skinparam sequence {
+  ParticipantBackgroundColor #DAE8FC
+  ParticipantBorderColor #6C8EBF
+  LifeLineBorderColor #1F3864
+  ActorBorderColor #1F3864
+  GroupBorderColor #6C8EBF
+}
+autonumber
+title Diagrama de secuencia – CRUD de vehículos y consulta de Mi Proceso (RF-10, RF-11, RF-13, RF-14)
+
+actor "Cliente" as C
+actor "Administrador\ndel taller" as A
+participant "Vistas Django\n(views.py)" as V
+participant "Formularios\n(forms.py)" as F
+participant "Modelo Vehiculo\n(ORM)" as M
+database "SQLite" as DB
+
+== Crear: el cliente registra su moto (RF-10) ==
+C -> V : POST /mi-proceso/registrar-moto/\n(marca, modelo, placa)
+V -> V : rol_requerido(Cliente)
+V -> F : VehiculoClienteForm.is_valid()
+F -> DB : ¿placa única?
+DB --> F : sí
+F --> V : datos válidos
+V -> M : save(cliente = usuario en sesión,\netapa = "Pendiente de ingreso")
+M -> DB : INSERT taller_motos_vehiculo
+V --> C : 302 → Mi Proceso + "Tu moto quedó registrada"
+
+== Leer: el administrador lista los vehículos (RF-14) ==
+A -> V : GET /panel/vehiculos/?etapa=lijado&cliente=3
+V -> V : rol_requerido(Administrador)
+V -> F : FiltroVehiculosForm
+V -> M : filter(etapa, cliente, búsqueda)
+M -> DB : SELECT ... WHERE etapa = 'lijado' AND cliente_id = 3
+DB --> M : filas
+V --> A : tabla de vehículos
+
+== Actualizar: el administrador cambia la etapa (RF-13) ==
+A -> V : POST /panel/vehiculos/{id}/etapa/ (etapa = "detallado")
+V -> V : rol_requerido(Administrador)
+V -> F : CambioEtapaForm.is_valid()
+V -> M : cambiar_etapa("detallado", administrador)
+M -> DB : UPDATE vehiculo SET etapa, etapa_actualizada_en
+M -> DB : INSERT historialetapa\n(anterior, nueva, responsable, fecha)
+note right of M : En la Entrega 3 este paso\ndispara el webhook a Node.js (RF-12)
+V --> A : 302 → detalle + "Etapa actualizada"
+
+== Consultar: el cliente revisa Mi Proceso (RF-11) ==
+C -> V : GET /mi-proceso/
+V -> M : request.user.vehiculos
+M -> DB : SELECT ... WHERE cliente_id = usuario
+DB --> M : sus vehículos + historial
+V -> M : linea_de_tiempo()
+V --> C : 5 etapas con la etapa actual resaltada
+
+== Eliminar: el administrador borra un vehículo (RF-14) ==
+A -> V : POST /panel/vehiculos/{id}/eliminar/
+V -> V : rol_requerido(Administrador)
+V -> M : delete()
+M -> DB : DELETE vehiculo (y su historial en cascada)
+V --> A : 302 → lista + "Vehículo eliminado"
+@enduml

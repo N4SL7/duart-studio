@@ -1,0 +1,66 @@
+@startuml secuencia_login_roles
+!include style.iuml
+skinparam sequence {
+  ParticipantBackgroundColor #DAE8FC
+  ParticipantBorderColor #6C8EBF
+  LifeLineBorderColor #1F3864
+  ActorBorderColor #1F3864
+  GroupBorderColor #6C8EBF
+}
+autonumber
+title Diagrama de secuencia – Inicio de sesión y control de roles (RF-09, RF-15)
+
+actor "Usuario\n(cliente o administrador)" as U
+participant "Navegador" as NAV
+participant "IniciarSesionView\n(views.py)" as LV
+participant "CorreoOUsuarioBackend\n(autenticacion.py)" as BE
+participant "Caché de intentos" as CACHE
+participant "rol_requerido\n(roles.py)" as ROL
+database "SQLite\n(auth_user, auth_group)" as DB
+
+U -> NAV : Ingresa correo y contraseña
+NAV -> LV : POST /cuenta/ingresar/
+LV -> BE : authenticate(correo, contraseña)
+BE -> CACHE : ¿intentos fallidos ≥ 5?
+
+alt Cuenta bloqueada
+  CACHE --> BE : sí
+  BE --> LV : PermissionDenied
+  LV --> NAV : "Demasiados intentos fallidos.\nIntenta en 15 minutos"
+else Cuenta no bloqueada
+  CACHE --> BE : no
+  BE -> DB : SELECT usuario WHERE email = correo
+  DB --> BE : usuario (hash de contraseña)
+  BE -> BE : check_password()
+
+  alt Credenciales incorrectas
+    BE --> LV : None
+    LV -> CACHE : incrementar intentos (señal user_login_failed)
+    LV --> NAV : "Correo o contraseña incorrectos."\n(mensaje genérico)
+  else Credenciales correctas
+    BE --> LV : usuario
+    LV -> CACHE : limpiar intentos (señal user_logged_in)
+    LV -> DB : crear sesión
+    LV --> NAV : 302 → /cuenta/inicio/
+    NAV -> ROL : GET /cuenta/inicio/
+    ROL -> DB : grupos del usuario
+    DB --> ROL : Administrador | Cliente
+    alt Rol Administrador
+      ROL --> NAV : 302 → /panel/vehiculos/
+    else Rol Cliente
+      ROL --> NAV : 302 → /mi-proceso/
+    end
+  end
+end
+
+== Acceso posterior a una ruta privada ==
+U -> NAV : Abre /panel/vehiculos/
+NAV -> ROL : GET con cookie de sesión
+alt Sin sesión (visitante)
+  ROL --> NAV : 302 → /cuenta/ingresar/?next=...
+else Rol sin permiso (cliente)
+  ROL --> NAV : 403 Acceso denegado
+else Rol Administrador
+  ROL --> NAV : 200 Lista de vehículos
+end
+@enduml

@@ -1,0 +1,36 @@
+{% extends "taller_motos/base.html" %}
+{% block titulo %}Mi Proceso - DUART-STUDIO{% endblock %}
+
+{% block contenido %}
+<section class="seccion">
+  <h2>Mi Proceso</h2>
+  <p>Consulta en qué etapa va cada una de tus motos.</p>
+  <a class="btn" href="{% url 'taller_motos:vehiculo_registrar' %}">+ Registrar mi moto</a>
+
+  {% for vehiculo in vehiculos %}
+  <article class="tarjeta proceso">
+    <div class="contenido">
+      <h3>{{ vehiculo.marca }} {{ vehiculo.modelo }} · <span class="placa">{{ vehiculo.placa }}</span></h3>
+      <p>
+        Servicio: {{ vehiculo.servicio|default:"Por definir" }} ·
+        Estado: <strong>{{ vehiculo.get_etapa_display }}</strong> ·
+        Actualizado: {{ vehiculo.etapa_actualizada_en|date:"d/m/Y H:i" }}
+      </p>
+      <ol class="linea-tiempo">
+        {% for nombre, estado in vehiculo.linea_de_tiempo %}
+          <li class="{{ estado }}">{{ nombre }}</li>
+        {% endfor %}
+      </ol>
+      {% if vehiculo.etapa == "pendiente" %}
+        <p class="nota">Tu moto aún no ha ingresado al taller. Agenda una cita para traerla.</p>
+      {% elif vehiculo.etapa == "finalizado" %}
+        <p class="nota exito">¡Tu moto está lista! Puedes pasar a recogerla.</p>
+      {% endif %}
+      <a href="{% url 'taller_motos:vehiculo_detail' vehiculo.id %}">Ver historial</a>
+    </div>
+  </article>
+  {% empty %}
+  <p>Aún no has registrado ninguna moto.</p>
+  {% endfor %}
+</section>
+{% endblock %}
