@@ -1,0 +1,16 @@
+{% extends "taller_motos/base.html" %}
+{% block titulo %}Crear cuenta - DUART-STUDIO{% endblock %}
+
+{% block contenido %}
+<section class="seccion">
+  <h2>Crear cuenta de cliente</h2>
+  <p class="centrado">Regístrate para registrar tu moto y seguir su proceso en el taller.</p>
+
+  <form class="formulario" method="post" novalidate>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn" type="submit">Crear cuenta</button>
+    <p class="centrado">¿Ya tienes cuenta? <a href="{% url 'taller_motos:login' %}">Inicia sesión</a></p>
+  </form>
+</section>
+{% endblock %}

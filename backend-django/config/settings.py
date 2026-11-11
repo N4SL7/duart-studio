@@ -63,6 +63,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'taller_motos.context_processors.rol',
             ],
         },
     },
@@ -117,6 +118,16 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+
+# Autenticación y roles (Entrega 2)
+# Inicio de sesión con correo o usuario y límite de intentos fallidos (taller_motos/autenticacion.py).
+
+AUTHENTICATION_BACKENDS = ['taller_motos.autenticacion.CorreoOUsuarioBackend']
+LOGIN_URL = 'taller_motos:login'
+LOGIN_REDIRECT_URL = 'taller_motos:inicio_por_rol'
+LOGOUT_REDIRECT_URL = 'taller_motos:index'
 
 
 # Email

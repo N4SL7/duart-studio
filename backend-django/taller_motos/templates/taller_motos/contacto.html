@@ -5,13 +5,6 @@
 <section class="seccion">
   <h2>Agenda tu cita</h2>
 
-  {% if messages %}
-  <div class="mensajes">
-    {% for message in messages %}
-      <div class="mensaje {{ message.tags }}">{{ message }}</div>
-    {% endfor %}
-  </div>
-  {% endif %}
 
   <form class="formulario" method="post">
     {% csrf_token %}

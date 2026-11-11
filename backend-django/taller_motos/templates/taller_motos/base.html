@@ -14,9 +14,36 @@
       <a href="{% url 'taller_motos:index' %}">Inicio</a>
       <a href="{% url 'taller_motos:galeria' %}">Galería</a>
       <a href="{% url 'taller_motos:contacto' %}">Agendar cita</a>
-      <a href="{% url 'taller_motos:servicio_list' %}">Administrar servicios</a>
+
+      {% if es_administrador %}
+        <a href="{% url 'taller_motos:vehiculo_list' %}">Vehículos</a>
+        <a href="{% url 'taller_motos:cita_list' %}">Citas</a>
+        <a href="{% url 'taller_motos:servicio_list' %}">Servicios</a>
+        <a href="{% url 'admin:index' %}">Django Admin</a>
+      {% elif user.is_authenticated %}
+        <a href="{% url 'taller_motos:mi_proceso' %}">Mi Proceso</a>
+      {% endif %}
+
+      {% if user.is_authenticated %}
+        <span class="usuario">{{ user.first_name|default:user.username }} · {{ rol_usuario }}</span>
+        <form class="form-salir" method="post" action="{% url 'taller_motos:logout' %}">
+          {% csrf_token %}
+          <button type="submit">Salir</button>
+        </form>
+      {% else %}
+        <a href="{% url 'taller_motos:login' %}">Ingresar</a>
+        <a class="nav-destacado" href="{% url 'taller_motos:registro' %}">Crear cuenta</a>
+      {% endif %}
     </nav>
   </header>
+
+  {% if messages %}
+  <div class="mensajes">
+    {% for message in messages %}
+      <div class="mensaje {{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
 
   {% block contenido %}{% endblock %}
 

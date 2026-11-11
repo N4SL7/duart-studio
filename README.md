@@ -35,18 +35,39 @@ Plataforma web para **DUART-STUDIO**, un taller de pintura y personalización de
 | Contenedores | Docker + Docker Compose | Levanta Django y Node.js con un solo comando |
 | Despliegue | GitHub + Vercel | Cada push publica la plataforma con HTTPS |
 
-Diagramas completos en [`docs/uml/`](docs/uml): casos de uso, componentes y despliegue.
+Diagramas completos en [`docs/uml/`](docs/uml): casos de uso, componentes, despliegue y secuencia (inicio de sesión con roles y CRUD de vehículos).
 
 ## Estado del proyecto
 
 | Entrega | Fecha | Alcance | Estado |
 |---|---|---|---|
 | Entrega 1 | 05/11/2026 | SRS, UML, backlog, matriz de trazabilidad y repositorio | ✅ Entregada |
-| Entrega 2 | 12/11/2026 | CRUD, login, roles, Django Admin, Dockerfile y despliegue | ⏳ Pendiente |
+| Entrega 2 | 12/11/2026 | CRUD, login, roles, Django Admin, Dockerfile y despliegue | 🚧 En curso (CRUD, login, roles, Admin y secuencia listos) |
 | Entrega 3 | 19/11/2026 | Microservicio Node.js, Swagger, IA y Docker Compose | ⏳ Pendiente |
 | ExpoUninpahu | 26/11/2026 | Producto final completo | ⏳ Pendiente |
 
 **Prototipo actual (Django):** sitio con servicios (RF-01), galería de trabajos (RF-02), solicitud de cita (RF-07) y CRUD de servicios (RF-16).
+
+### Entrega 2 · Qué se implementó
+
+| Funcionalidad | Requisitos | Dónde |
+|---|---|---|
+| **CRUD principal: vehículos en taller** — crear, listar con filtros por etapa/cliente/placa, ver, editar y eliminar | RF-14 | `/panel/vehiculos/` |
+| **Cambio de etapa** con fecha y responsable guardados en el historial | RF-13 | Detalle del vehículo y Django Admin |
+| **Registro de cliente** con casilla obligatoria de autorización de datos (Ley 1581 de 2012), correo único y contraseña cifrada | RF-08 | `/cuenta/registro/` |
+| **Login** con correo o usuario, mensaje de error genérico, cierre de sesión y **bloqueo de 15 min tras 5 intentos fallidos** (también en Django Admin) | RF-09, RF-15 | `/cuenta/ingresar/` |
+| **Roles** Visitante, Cliente y Administrador (grupos de Django con permisos, creados automáticamente en cada `migrate`) | RF-15 | `taller_motos/roles.py` |
+| **Mi Proceso**: el cliente registra su moto y ve las cinco etapas con la actual resaltada | RF-10, RF-11 | `/mi-proceso/` |
+| **Citas** con estados pendiente, confirmada y cancelada | RF-17 | `/panel/citas/` y Django Admin |
+| **Django Admin** personalizado: vehículos con historial en línea y acción "Avanzar etapa", citas editables en la lista, usuarios con su rol y perfil | RF-13, RF-14, RF-16, RF-17 | `/admin/` |
+| **Diagramas de secuencia** (login y roles; CRUD de vehículos) | — | [`docs/uml/`](docs/uml) |
+
+| Ruta | Visitante | Cliente | Administrador |
+|---|:-:|:-:|:-:|
+| Inicio, galería, servicios, agendar cita | ✅ | ✅ | ✅ |
+| Mi Proceso / registrar mi moto | ➜ login | ✅ (solo sus motos) | — |
+| Panel: vehículos, citas, servicios | ➜ login | ⛔ 403 | ✅ |
+| Django Admin | ➜ login | ⛔ | ✅ |
 
 ## Estructura del repositorio
 
@@ -76,13 +97,22 @@ python -m venv .venv
 # Windows: .venv\Scripts\activate    ·    macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
 python manage.py migrate
-python manage.py loaddata datos_iniciales
-python manage.py createsuperuser
+python manage.py cargar_datos_demo
 python manage.py runserver
 ```
 
+El repositorio incluye `backend-django/db.sqlite3` ya migrada y con datos de demostración, así que tras instalar dependencias basta con `python manage.py runserver`. `cargar_datos_demo` vuelve a crear los roles, usuarios y datos de ejemplo sin duplicar nada.
+
 - Sitio: http://127.0.0.1:8000/
 - Panel administrativo: http://127.0.0.1:8000/admin/
+
+**Usuarios de demostración** (solo para desarrollo):
+
+| Rol | Correo | Contraseña |
+|---|---|---|
+| Administrador | `admin@duartstudio.co` (usuario `admin`) | `DuartAdmin2026*` |
+| Cliente | `cliente@duartstudio.co` | `Cliente2026*` |
+| Cliente | `andres.rojas@correo.co` | `Cliente2026*` |
 
 Para correr las pruebas: `python manage.py test`
 

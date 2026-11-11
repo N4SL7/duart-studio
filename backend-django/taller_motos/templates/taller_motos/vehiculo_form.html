@@ -1,0 +1,19 @@
+{% extends "taller_motos/base.html" %}
+{% block titulo %}{{ modo }} vehículo - DUART-STUDIO{% endblock %}
+
+{% block contenido %}
+<section class="seccion">
+  <h2>{% if modo == "Registrar mi" %}Registrar mi moto{% else %}{{ modo }} vehículo{% endif %}</h2>
+
+  <form class="formulario" method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn" type="submit">Guardar</button>
+    {% if es_administrador %}
+      <a class="btn" href="{% if vehiculo %}{% url 'taller_motos:vehiculo_detail' vehiculo.id %}{% else %}{% url 'taller_motos:vehiculo_list' %}{% endif %}">Cancelar</a>
+    {% else %}
+      <a class="btn" href="{% url 'taller_motos:mi_proceso' %}">Cancelar</a>
+    {% endif %}
+  </form>
+</section>
+{% endblock %}
