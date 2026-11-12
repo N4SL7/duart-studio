@@ -60,7 +60,7 @@ Diagramas completos en [`docs/uml/`](docs/uml): casos de uso, componentes, despl
 | **Mi Proceso**: el cliente registra su moto y ve las cinco etapas con la actual resaltada | RF-10, RF-11 | `/mi-proceso/` |
 | **Citas** con estados pendiente, confirmada y cancelada | RF-17 | `/panel/citas/` y Django Admin |
 | **Django Admin** personalizado: vehículos con historial en línea y acción "Avanzar etapa", citas editables en la lista, usuarios con su rol y perfil | RF-13, RF-14, RF-16, RF-17 | `/admin/` |
-| **Diagramas de secuencia** (login y roles; CRUD de vehículos) | — | [`docs/uml/`](docs/uml) |
+| **Diagramas de secuencia** (login y roles; CRUD de vehículos) | — | [login y roles](docs/uml/4_secuencia_login_roles.png) · [CRUD de vehículos](docs/uml/5_secuencia_crud_vehiculos.png) |
 
 | Ruta | Visitante | Cliente | Administrador |
 |---|:-:|:-:|:-:|
