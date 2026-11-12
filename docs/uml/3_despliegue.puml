@@ -1,46 +1,41 @@
 @startuml despliegue
 !include style.iuml
-title Diagrama de despliegue – Plataforma web DUART-STUDIO
+title Diagrama de despliegue – Plataforma web DUART-STUDIO (v1.1)
 
 node "PC del desarrollador" as PC <<device>> {
   node "Docker Engine" as DE <<executionEnvironment>> {
-    node "Contenedor Django + SQLite" as C1 <<container>>
-    node "Contenedor Node.js" as C2 <<container>>
+    node "Contenedor Django\n(gunicorn)" as C1 <<container>>
   }
-  artifact "docker-compose.yml" as DC
+  artifact "Dockerfile" as DF
+  database "SQLite\n(desarrollo)" as SQ
 }
 
-node "GitHub\n(repositorio)" as GH <<device>>
+node "GitHub\n(repositorio N4SL7/duart-studio)" as GH <<device>>
 
 node "Navegador\n(móvil / PC)" as NAV <<device>>
 
-node "Vercel" as VC <<device>> {
-  node "Vercel Function Python" as VFP <<executionEnvironment>> {
-    artifact "backend Django" as ART_DJ
+node "Render · Web Service (plan Free)" as RD <<device>> {
+  node "Contenedor Docker" as RC <<executionEnvironment>> {
+    artifact "backend Django\n(gunicorn + WhiteNoise)" as ART_DJ
   }
-  node "Vercel Function Node.js" as VFN <<executionEnvironment>> {
-    artifact "servicio Node.js" as ART_ND
-  }
+  node "Servicio Node.js\n(Entrega 3)" as RN <<executionEnvironment>> #line.dashed
 }
 
-database "PostgreSQL\n(Neon)" as PG
+database "PostgreSQL\n(Neon · AWS US East 2)" as PG
 
-node "API de IA (LLM)" as LLM <<external>>
+node "API de IA (LLM)\n(Entrega 3)" as LLM <<external>> #line.dashed
 node "WhatsApp" as WA <<external>>
-node "Cloudinary" as CLD <<external>>
-node "Correo SMTP" as SMTP <<external>>
+node "Cloudinary\n(Entrega 3)" as CLD <<external>> #line.dashed
 
-DC .. DE
-C1 -right- C2 : REST / webhook
+DF ..> DE : docker build
+C1 -- SQ : SQL
 PC ..> GH : git push
-GH ..> VC : despliegue automático
+GH ..> RD : despliegue automático\n(rama main, Dockerfile)
 
-NAV -- VFP : HTTPS
-NAV -- VFN : WSS
-VFP -- VFN : REST / webhook
-VFP -- PG : SQL / TLS
-VFP -- CLD : HTTPS
-VFN -- LLM : HTTPS
-VFN -- WA : HTTPS
-VFN -- SMTP : SMTP
+NAV -- ART_DJ : HTTPS\nduart-studio.onrender.com
+ART_DJ -- PG : SQL / TLS\n(DATABASE_URL)
+ART_DJ ..> CLD : HTTPS
+ART_DJ ..> RN : REST / webhook
+RN ..> LLM : HTTPS
+NAV ..> WA : enlace wa.me
 @enduml
