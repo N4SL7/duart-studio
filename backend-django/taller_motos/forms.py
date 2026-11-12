@@ -71,7 +71,26 @@ class RegistroForm(UserCreationForm):
 
 # --- Vehículos: CRUD principal (RF-10, RF-13, RF-14) ---
 
-class VehiculoClienteForm(forms.ModelForm):
+class PlacaNormalizadaMixin:
+    """Normaliza la placa (mayúsculas, sin espacios) ANTES de validar que sea única.
+
+    Sin esto, "abc 12d" pasaba la validación aunque ya existiera "ABC12D" y la base
+    de datos respondía con un IntegrityError.
+    """
+
+    def clean_placa(self):
+        placa = self.cleaned_data["placa"].upper().replace(" ", "").replace("-", "")
+        if not placa:
+            raise forms.ValidationError("Escribe la placa de la moto.")
+        repetida = Vehiculo.objects.filter(placa=placa)
+        if self.instance.pk:
+            repetida = repetida.exclude(pk=self.instance.pk)
+        if repetida.exists():
+            raise forms.ValidationError(f"Ya hay una moto registrada con la placa {placa}.")
+        return placa
+
+
+class VehiculoClienteForm(PlacaNormalizadaMixin, forms.ModelForm):
     """El cliente registra su moto; queda asociada a su cuenta (RF-10)."""
 
     class Meta:
@@ -81,7 +100,7 @@ class VehiculoClienteForm(forms.ModelForm):
         widgets = {"observaciones": forms.Textarea(attrs={"rows": 3})}
 
 
-class VehiculoAdminForm(forms.ModelForm):
+class VehiculoAdminForm(PlacaNormalizadaMixin, forms.ModelForm):
     """El administrador gestiona cualquier vehículo, incluida su etapa (RF-13, RF-14)."""
 
     class Meta:

@@ -113,7 +113,7 @@ class Vehiculo(models.Model):
         return f"{self.marca} {self.modelo} · {self.placa}"
 
     def save(self, *args, **kwargs):
-        self.placa = self.placa.upper().replace(" ", "")
+        self.placa = self.placa.upper().replace(" ", "").replace("-", "")
         super().save(*args, **kwargs)
 
     def cambiar_etapa(self, nueva_etapa, usuario=None):

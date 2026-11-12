@@ -159,6 +159,25 @@ class VehiculoCrudTests(TestCase):
         self.assertEqual(vehiculo.cliente, self.cliente)
         self.assertEqual(vehiculo.etapa, Vehiculo.Etapa.PENDIENTE)
 
+    def test_placa_repetida_escrita_distinto_muestra_error(self):
+        """Antes daba IntegrityError (500) si la placa repetida venía en minúsculas o con espacios."""
+        self.client.force_login(self.otro_cliente)
+        for placa in ["abc 12d", "ABC-12D", "abc12d"]:
+            with self.subTest(placa=placa):
+                respuesta = self.client.post(reverse("taller_motos:vehiculo_registrar"),
+                                             {"marca": "Honda", "modelo": "Wave", "placa": placa})
+                self.assertEqual(respuesta.status_code, 200)
+                self.assertContains(respuesta, "Ya hay una moto registrada con la placa ABC12D")
+        self.assertEqual(Vehiculo.objects.filter(placa="ABC12D").count(), 1)
+
+    def test_admin_puede_editar_sin_cambiar_placa(self):
+        self.client.force_login(self.admin)
+        self.client.post(reverse("taller_motos:vehiculo_update", args=[self.vehiculo.id]),
+                         {"cliente": self.cliente.id, "marca": "Yamaha", "modelo": "FZ 2.0", "placa": "abc12d",
+                          "etapa": "pendiente"})
+        self.vehiculo.refresh_from_db()
+        self.assertEqual(self.vehiculo.modelo, "FZ 2.0")
+
     def test_mi_proceso_muestra_solo_mis_motos(self):
         Vehiculo.objects.create(cliente=self.otro_cliente, marca="AKT", modelo="NKD", placa="ZZZ99Z")
         self.client.force_login(self.cliente)
