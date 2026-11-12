@@ -5,6 +5,8 @@ Plataforma web para **DUART-STUDIO**, un taller de pintura y personalización de
 > Proyecto Integrador **ExpoUninpahu 2026** · Ingeniería de Software · Fundación Universitaria UNINPAHU
 > Docente: Elfar Didier Morantes Sánchez
 
+🌐 **Aplicación publicada:** https://duart-studio.onrender.com (Render · plan gratuito: la primera visita puede tardar unos 50 segundos mientras el servicio despierta)
+
 ## Problema
 
 - **Baja visibilidad digital:** el taller depende de redes sociales y del voz a voz; no tiene un medio propio con su portafolio, servicios y contacto.
@@ -32,8 +34,8 @@ Plataforma web para **DUART-STUDIO**, un taller de pintura y personalización de
 | Tiempo real | Node.js + Express + Socket.IO | Chat del asistente y notificaciones de cambio de etapa |
 | IA | Motor de intenciones + API de LLM | Preguntas frecuentes primero; si no reconoce la pregunta, consulta el LLM |
 | Base de datos | SQLite (desarrollo) / PostgreSQL en Neon (producción) | Solo Django escribe; Node.js lee por la API REST |
-| Contenedores | Docker + Docker Compose | Levanta Django y Node.js con un solo comando |
-| Despliegue | GitHub + Vercel | Cada push publica la plataforma con HTTPS |
+| Contenedores | Docker (Docker Compose en la Entrega 3) | Dockerfile del backend con gunicorn y WhiteNoise |
+| Despliegue | GitHub + Render + Neon | Cada push a `main` reconstruye el contenedor en Render, con HTTPS; base de datos PostgreSQL en Neon |
 
 Diagramas completos en [`docs/uml/`](docs/uml): casos de uso, componentes, despliegue y secuencia (inicio de sesión con roles y CRUD de vehículos).
 
@@ -42,11 +44,10 @@ Diagramas completos en [`docs/uml/`](docs/uml): casos de uso, componentes, despl
 | Entrega | Fecha | Alcance | Estado |
 |---|---|---|---|
 | Entrega 1 | 05/11/2026 | SRS, UML, backlog, matriz de trazabilidad y repositorio | ✅ Entregada |
-| Entrega 2 | 12/11/2026 | CRUD, login, roles, Django Admin, Dockerfile y despliegue | 🚧 En curso (CRUD, login, roles, Admin y secuencia listos) |
+| Entrega 2 | 12/11/2026 | CRUD, login, roles, Django Admin, Dockerfile y despliegue | ✅ Entregada |
 | Entrega 3 | 19/11/2026 | Microservicio Node.js, Swagger, IA y Docker Compose | ⏳ Pendiente |
 | ExpoUninpahu | 26/11/2026 | Producto final completo | ⏳ Pendiente |
 
-**Prototipo actual (Django):** sitio con servicios (RF-01), galería de trabajos (RF-02), solicitud de cita (RF-07) y CRUD de servicios (RF-16).
 
 ### Entrega 2 · Qué se implementó
 
@@ -75,17 +76,20 @@ Diagramas completos en [`docs/uml/`](docs/uml): casos de uso, componentes, despl
 duart-studio/
 ├── backend-django/        Proyecto Django (config/ y app taller_motos/)
 ├── docs/
-│   ├── SRS_DUART-STUDIO_Entrega1.docx        Documento SRS
+│   ├── SRS_DUART-STUDIO_Entrega2_v1.1.docx   Documento SRS (versión vigente)
+│   ├── SRS_DUART-STUDIO_Entrega1.0.docx      SRS de la Entrega 1
 │   ├── DUART-STUDIO_Backlog_y_Matriz.xlsx    Backlog y matriz de trazabilidad
 │   └── uml/                                   Diagramas (PNG + código PlantUML)
 ├── scripts/
 │   └── crear_backlog.sh   Crea las historias de usuario en GitHub Projects
+├── Dockerfile             Imagen del backend Django
+├── .dockerignore
 ├── .env.example           Variables de entorno de ejemplo
 ├── .gitignore
 └── README.md
 ```
 
-El servicio `servicio-node/`, los `Dockerfile` y el `docker-compose.yml` se agregan en las entregas 2 y 3.
+El servicio `servicio-node/` y el `docker-compose.yml` se agregan en la Entrega 3.
 
 ## Cómo ejecutarlo en local
 
@@ -116,6 +120,24 @@ El repositorio incluye `backend-django/db.sqlite3` ya migrada y con datos de dem
 
 Para correr las pruebas: `python manage.py test`
 
+## Cómo ejecutarlo con Docker
+
+Desde la raíz del repositorio:
+
+```bash
+docker build -t duart-studio .
+docker run -p 8000:8000 -e CARGAR_DATOS_DEMO=True duart-studio
+```
+
+Luego abre http://127.0.0.1:8000/. Sin `DATABASE_URL`, el contenedor usa SQLite; con `DATABASE_URL` se conecta a PostgreSQL.
+
+## Despliegue (Render + Neon)
+
+1. Base de datos PostgreSQL en **Neon** (región AWS US East 2).
+2. **Render → New Web Service** con este repositorio, rama `main`, lenguaje **Docker** y plan **Free**.
+3. Variables de entorno en Render: `DATABASE_URL`, `DJANGO_SECRET_KEY` (generada), `DJANGO_DEBUG=False`, `CARGAR_DATOS_DEMO=True` y `DJANGO_ADMIN_PASSWORD`.
+4. Al arrancar, `entrypoint.sh` aplica las migraciones, carga los datos de demostración y levanta gunicorn. En producción, la contraseña del administrador es la definida en `DJANGO_ADMIN_PASSWORD`.
+
 ## Variables de entorno
 
 Copia `.env.example` como `.env` y completa los valores. El archivo `.env` nunca se sube al repositorio.
@@ -125,6 +147,10 @@ Copia `.env.example` como `.env` y completa los valores. El archivo `.env` nunca
 | `DJANGO_SECRET_KEY` | Clave secreta de Django |
 | `DJANGO_DEBUG` | `True` en desarrollo, `False` en producción |
 | `DJANGO_ALLOWED_HOSTS` | Dominios permitidos, separados por coma |
+| `DJANGO_CSRF_TRUSTED_ORIGINS` | Orígenes HTTPS confiables para formularios (Render agrega el suyo automáticamente) |
+| `DATABASE_URL` | Conexión a PostgreSQL (si no se define, se usa SQLite) |
+| `CARGAR_DATOS_DEMO` | `True` para cargar los datos de demostración al arrancar el contenedor |
+| `DJANGO_ADMIN_PASSWORD` | Contraseña del administrador de demostración en producción |
 
 ## Backlog
 

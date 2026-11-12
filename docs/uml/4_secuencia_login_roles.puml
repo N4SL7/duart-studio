@@ -1,11 +1,11 @@
 @startuml secuencia_login_roles
 !include style.iuml
 skinparam sequence {
-  ParticipantBackgroundColor #DAE8FC
-  ParticipantBorderColor #6C8EBF
-  LifeLineBorderColor #1F3864
-  ActorBorderColor #1F3864
-  GroupBorderColor #6C8EBF
+  ParticipantBackgroundColor #FFE3CC
+  ParticipantBorderColor #FF6B00
+  LifeLineBorderColor #16171B
+  ActorBorderColor #16171B
+  GroupBorderColor #FF6B00
 }
 autonumber
 title Diagrama de secuencia – Inicio de sesión y control de roles (RF-09, RF-15)
