@@ -1,0 +1,13 @@
+# Lo que no entra a la imagen de Docker
+.git
+.gitignore
+**/__pycache__
+**/*.pyc
+**/.venv
+**/venv
+.env
+backend-django/db.sqlite3
+backend-django/staticfiles
+docs
+scripts
+*.md

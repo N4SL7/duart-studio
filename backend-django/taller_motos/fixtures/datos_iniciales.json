@@ -7,7 +7,7 @@
       "descripcion": "Pintura total de carenaje y tanque: alistamiento, lijado, preparación de pintura, aplicación, detallado y pulido.",
       "precio": "850000.00",
       "duracion_estimada": "5 a 7 días",
-      "imagen_url": ""
+      "imagen_url": "https://images.unsplash.com/photo-1767275090613-adb6fbd16172?w=800&q=80"
     }
   },
   {
@@ -18,7 +18,7 @@
       "descripcion": "Diseño exclusivo con gráficos, degradados o aerografía según la idea del cliente.",
       "precio": "1200000.00",
       "duracion_estimada": "7 a 10 días",
-      "imagen_url": ""
+      "imagen_url": "https://images.unsplash.com/photo-1685478566029-4d09d88025c6?w=800&q=80"
     }
   },
   {
@@ -29,7 +29,7 @@
       "descripcion": "Corrección de rayones y desgastes, pulido y brillo final para recuperar el acabado.",
       "precio": "250000.00",
       "duracion_estimada": "1 a 2 días",
-      "imagen_url": ""
+      "imagen_url": "https://images.unsplash.com/photo-1685478566251-044c5e3a513c?w=800&q=80"
     }
   },
   {
@@ -39,7 +39,7 @@
       "marca": "Yamaha",
       "modelo": "FZ",
       "anio": 2022,
-      "imagen_url": "",
+      "imagen_url": "https://images.unsplash.com/photo-1722720251730-3f5df2030e2c?w=800&q=80",
       "descripcion": "Pintura completa en azul mate con detalles en negro brillante."
     }
   },
@@ -50,7 +50,7 @@
       "marca": "Honda",
       "modelo": "CB 190R",
       "anio": 2021,
-      "imagen_url": "",
+      "imagen_url": "https://images.unsplash.com/photo-1791161189309-1097845ad9b9?w=800&q=80",
       "descripcion": "Personalización con gráficos racing y acabado perlado."
     }
   }

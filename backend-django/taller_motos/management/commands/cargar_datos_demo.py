@@ -4,6 +4,7 @@ Uso:  python manage.py cargar_datos_demo
 
 Es idempotente: se puede ejecutar varias veces sin duplicar registros.
 """
+import os
 from datetime import date, timedelta
 
 from django.contrib.auth import get_user_model
@@ -16,7 +17,7 @@ from django.utils import timezone
 from taller_motos.models import Cita, PerfilCliente, Servicio, Vehiculo
 from taller_motos.roles import ADMINISTRADOR, CLIENTE, crear_grupos
 
-ADMIN = {"username": "admin", "email": "admin@duartstudio.co", "password": "DuartAdmin2026*",
+ADMIN = {"username": "admin", "email": "admin@duartstudio.co", "password": os.environ.get("DJANGO_ADMIN_PASSWORD", "DuartAdmin2026*"),  # en producción se define por variable de entorno
          "first_name": "Administrador", "last_name": "DUART-STUDIO"}
 
 CLIENTES = [
@@ -58,7 +59,8 @@ class Command(BaseCommand):
             admin.set_password(ADMIN["password"])
             admin.save()
         admin.groups.add(grupo_admin)
-        self.stdout.write(f"✔ Administrador: {ADMIN['email']} / {ADMIN['password']}")
+        clave = "(definida en DJANGO_ADMIN_PASSWORD)" if os.environ.get("DJANGO_ADMIN_PASSWORD") else ADMIN["password"]
+        self.stdout.write(f"✔ Administrador: {ADMIN['email']} / {clave}")
 
         for datos in CLIENTES:
             cliente, creado = Usuario.objects.get_or_create(
