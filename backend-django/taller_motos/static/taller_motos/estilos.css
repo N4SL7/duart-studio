@@ -186,3 +186,36 @@ form.formulario input[type="checkbox"] { align-self: flex-start; }
   .seccion { padding: 2rem 1rem; }
   .tabla { display: block; overflow-x: auto; }
 }
+
+/* --- Entrega 3: asistente virtual y avisos en tiempo real --- */
+.asistente { position: fixed; right: 1rem; bottom: 1rem; z-index: 50; display: flex; flex-direction: column; align-items: flex-end; gap: .6rem; }
+.asistente-boton {
+  background: var(--naranja); color: #111; border: none; border-radius: 999px;
+  padding: .8rem 1.2rem; font-weight: bold; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.4);
+}
+.asistente-panel {
+  width: min(360px, calc(100vw - 2rem)); height: min(480px, calc(100vh - 7rem));
+  display: flex; flex-direction: column; background: var(--gris); border: 1px solid #3a3b40;
+  border-radius: 12px; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,.5);
+}
+.asistente-panel[hidden] { display: none; }
+.asistente-cabecera { display: flex; justify-content: space-between; align-items: center; padding: .7rem 1rem; background: var(--negro); border-bottom: 2px solid var(--naranja); }
+.asistente-cabecera button { background: none; border: none; color: var(--blanco); font-size: 1.1rem; cursor: pointer; }
+.asistente-mensajes { flex: 1; overflow-y: auto; padding: .8rem; display: flex; flex-direction: column; gap: .5rem; }
+.burbuja { max-width: 85%; padding: .55rem .8rem; border-radius: 10px; white-space: pre-line; line-height: 1.35; font-size: .95rem; }
+.burbuja-usuario { align-self: flex-end; background: var(--naranja); color: #111; }
+.burbuja-asistente { align-self: flex-start; background: #1e1f24; border: 1px solid #3a3b40; }
+.burbuja-cargando { color: #999; font-style: italic; }
+.burbuja-fuente { display: block; margin-top: .3rem; color: #999; font-size: .75rem; }
+.burbuja-whatsapp { display: inline-block; margin-top: .4rem; color: #25d366; font-weight: bold; }
+.asistente-form { display: flex; gap: .4rem; padding: .6rem; border-top: 1px solid #3a3b40; }
+.asistente-form input { flex: 1; min-width: 0; padding: .55rem; border-radius: 6px; border: 1px solid #444; background: #1e1f24; color: var(--blanco); }
+.asistente-form button { background: var(--naranja); color: #111; border: none; border-radius: 6px; padding: 0 .9rem; font-weight: bold; cursor: pointer; }
+
+.avisos { position: fixed; top: 1rem; right: 1rem; z-index: 60; display: flex; flex-direction: column; gap: .5rem; }
+.aviso {
+  display: flex; flex-direction: column; gap: .2rem; min-width: 260px; max-width: calc(100vw - 2rem);
+  padding: .8rem 1rem; background: #234d20; border-left: 4px solid #7fd17a; border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.45); animation: aviso-entrada .3s ease-out;
+}
+@keyframes aviso-entrada { from { transform: translateX(110%); opacity: 0; } to { transform: none; opacity: 1; } }

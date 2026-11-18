@@ -78,6 +78,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'taller_motos.context_processors.rol',
+                'taller_motos.context_processors.servicio_node',
             ],
         },
     },
@@ -161,6 +162,18 @@ AUTHENTICATION_BACKENDS = ['taller_motos.autenticacion.CorreoOUsuarioBackend']
 LOGIN_URL = 'taller_motos:login'
 LOGIN_REDIRECT_URL = 'taller_motos:inicio_por_rol'
 LOGOUT_REDIRECT_URL = 'taller_motos:index'
+
+
+# Microservicio Node.js (Entrega 3): asistente con IA y notificaciones en tiempo real.
+# NODE_SERVICE_URL: dirección de Node vista DESDE Django (webhook). Vacía = no se envían avisos.
+# NODE_PUBLIC_URL: dirección de Node vista desde el NAVEGADOR (chat y Socket.IO). Vacía = sin chat.
+# En desarrollo apuntan a Node local; en producción hay que definirlas (si no, el sitio funciona sin chat).
+_NODE_LOCAL = 'http://127.0.0.1:3000' if DEBUG else ''
+NODE_SERVICE_URL = os.environ.get('NODE_SERVICE_URL', _NODE_LOCAL)
+NODE_PUBLIC_URL = os.environ.get('NODE_PUBLIC_URL', _NODE_LOCAL).rstrip('/')
+# Secretos compartidos con Node: deben tener el mismo valor en los dos servicios.
+SERVICIO_API_KEY = os.environ.get('SERVICIO_API_KEY', 'clave-servicio-desarrollo')
+WEBHOOK_SECRET = os.environ.get('WEBHOOK_SECRET', 'secreto-webhook-desarrollo')
 
 
 # Email

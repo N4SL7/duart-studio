@@ -124,9 +124,14 @@ class Vehiculo(models.Model):
         self.etapa = nueva_etapa
         self.etapa_actualizada_en = timezone.now()
         self.save(update_fields=["etapa", "etapa_actualizada_en"])
-        return HistorialEtapa.objects.create(
+        historial = HistorialEtapa.objects.create(
             vehiculo=self, etapa_anterior=anterior, etapa_nueva=nueva_etapa, cambiado_por=usuario
         )
+        # Avisa al cliente en tiempo real a través del microservicio Node.js (RF-12).
+        from .notificaciones import notificar_cambio_etapa
+
+        notificar_cambio_etapa(self, historial)
+        return historial
 
     def linea_de_tiempo(self):
         """Lista de (etiqueta, estado) para pintar las cinco etapas en Mi Proceso."""

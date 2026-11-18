@@ -30,11 +30,11 @@ Plataforma web para **DUART-STUDIO**, un taller de pintura y personalización de
 
 | Componente | Tecnología | Rol |
 |---|---|---|
-| Backend | Django + Django REST Framework | Apps del taller, Django Admin, autenticación y API REST |
-| Tiempo real | Node.js + Express + Socket.IO | Chat del asistente y notificaciones de cambio de etapa |
-| IA | Motor de intenciones + API de LLM | Preguntas frecuentes primero; si no reconoce la pregunta, consulta el LLM |
+| Backend | Django | Apps del taller, Django Admin, autenticación y API REST interna (JSON) para Node.js |
+| Microservicio | Node.js + Express + Socket.IO | Asistente virtual, notificaciones de cambio de etapa en tiempo real y API documentada con Swagger |
+| IA | Motor de intenciones + Claude (Anthropic) | Preguntas frecuentes primero; si no reconoce la pregunta, responde la IA generativa |
 | Base de datos | SQLite (desarrollo) / PostgreSQL en Neon (producción) | Solo Django escribe; Node.js lee por la API REST |
-| Contenedores | Docker (Docker Compose en la Entrega 3) | Dockerfile del backend con gunicorn y WhiteNoise |
+| Contenedores | Docker + Docker Compose | Un Dockerfile por servicio; `docker compose up` levanta Django y Node.js juntos |
 | Despliegue | GitHub + Render + Neon | Cada push a `main` reconstruye el contenedor en Render, con HTTPS; base de datos PostgreSQL en Neon |
 
 Diagramas completos en [`docs/uml/`](docs/uml): casos de uso, componentes, despliegue y secuencia (inicio de sesión con roles y CRUD de vehículos).
@@ -45,7 +45,7 @@ Diagramas completos en [`docs/uml/`](docs/uml): casos de uso, componentes, despl
 |---|---|---|---|
 | Entrega 1 | 05/11/2026 | SRS, UML, backlog, matriz de trazabilidad y repositorio | ✅ Entregada |
 | Entrega 2 | 12/11/2026 | CRUD, login, roles, Django Admin, Dockerfile y despliegue | ✅ Entregada |
-| Entrega 3 | 19/11/2026 | Microservicio Node.js, Swagger, IA y Docker Compose | ⏳ Pendiente |
+| Entrega 3 | 19/11/2026 | Microservicio Node.js, Swagger, IA y Docker Compose | 🚧 En curso (microservicio, Swagger, IA, integración y Compose listos) |
 | ExpoUninpahu | 26/11/2026 | Producto final completo | ⏳ Pendiente |
 
 
@@ -70,11 +70,43 @@ Diagramas completos en [`docs/uml/`](docs/uml): casos de uso, componentes, despl
 | Panel: vehículos, citas, servicios | ➜ login | ⛔ 403 | ✅ |
 | Django Admin | ➜ login | ⛔ | ✅ |
 
+### Entrega 3 · Qué se implementó
+
+```
+Navegador ──HTTP──> Django :8000 ──webhook (cambio de etapa)──> Node.js :3000
+    │                  ▲                                          │   ├─ Swagger /api-docs
+    └──WebSocket───────┼──────────────────────────────────────────┘   ├─ Asistente ──> Claude (IA)
+     (chat y avisos)   └────────── API REST (servicios, estado de moto) ┘
+```
+
+| Funcionalidad | Requisitos | Dónde |
+|---|---|---|
+| **Microservicio Node.js** (Express + Socket.IO) con 21 pruebas automáticas | RF-03, RF-12 | [`servicio-node/`](servicio-node) |
+| **Swagger / OpenAPI 3** con todos los endpoints, esquemas y ejemplos | — | http://localhost:3000/api-docs |
+| **Asistente virtual**: 1) estado de la moto por placa, 2) preguntas frecuentes (motor de intenciones), 3) IA generativa (Claude) si no reconoce la pregunta, 4) WhatsApp si la IA no está disponible | RF-03, RF-04 | Botón 💬 en todas las páginas |
+| **Integración Django → Node.js**: al cambiar la etapa, Django envía un webhook firmado y Node avisa al cliente en tiempo real (solo al dueño de la moto, con token HMAC) | RF-12, RF-13 | Aviso 🔔 en el sitio y Mi Proceso se actualiza solo |
+| **Integración Node.js → Django**: Node lee servicios y estado de motos por la API REST de Django (con clave de servicio y sin datos personales) | — | `/api/servicios/`, `/api/vehiculos/<placa>/estado/` |
+| **Docker Compose**: Django + Node.js con healthchecks y red interna | — | [`docker-compose.yml`](docker-compose.yml) |
+
+#### Endpoints del microservicio
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/api/salud` | Estado del servicio, de Django y de la IA |
+| POST | `/api/asistente/chat` | Enviar un mensaje al asistente |
+| GET | `/api/asistente/intenciones` | Preguntas frecuentes que reconoce |
+| GET | `/api/asistente/no-reconocidas` | Preguntas que no entendió (cabecera `X-API-Key`) |
+| POST | `/api/notificaciones/etapa` | Webhook de Django (cabecera `X-Webhook-Secret`) |
+| GET | `/api/notificaciones` | Avisos recientes de un cliente (con su token) |
+| WS | `chat:mensaje` → `chat:respuesta` | Chat por Socket.IO |
+| WS | `cliente:unirse` → `etapa:cambio` | Avisos de cambio de etapa en vivo |
+
 ## Estructura del repositorio
 
 ```
 duart-studio/
 ├── backend-django/        Proyecto Django (config/ y app taller_motos/)
+├── servicio-node/         Microservicio Node.js (asistente, notificaciones y Swagger)
 ├── docs/
 │   ├── SRS_DUART-STUDIO_Entrega2_v1.1.docx   Documento SRS (versión vigente)
 │   ├── SRS_DUART-STUDIO_Entrega1.0.docx      SRS de la Entrega 1
@@ -83,13 +115,12 @@ duart-studio/
 ├── scripts/
 │   └── crear_backlog.sh   Crea las historias de usuario en GitHub Projects
 ├── Dockerfile             Imagen del backend Django
+├── docker-compose.yml     Levanta Django + Node.js
 ├── .dockerignore
 ├── .env.example           Variables de entorno de ejemplo
 ├── .gitignore
 └── README.md
 ```
-
-El servicio `servicio-node/` y el `docker-compose.yml` se agregan en la Entrega 3.
 
 ## Cómo ejecutarlo en local
 
@@ -120,9 +151,33 @@ El repositorio incluye `backend-django/db.sqlite3` ya migrada y con datos de dem
 
 Para correr las pruebas: `python manage.py test`
 
-## Cómo ejecutarlo con Docker
+### Microservicio Node.js (en otra terminal)
+
+Requisitos: Node.js 20 o superior.
+
+```bash
+cd servicio-node
+npm install
+npm start          # http://localhost:3000/api-docs
+npm test           # pruebas del microservicio
+```
+
+Para que el asistente use IA generativa, define `ANTHROPIC_API_KEY` antes de `npm start` (en PowerShell: `$env:ANTHROPIC_API_KEY="..."`). Sin clave, responde con las preguntas frecuentes y deriva a WhatsApp.
+
+## Cómo ejecutarlo con Docker Compose (Django + Node.js)
 
 Desde la raíz del repositorio:
+
+```bash
+docker compose up --build
+```
+
+- Sitio: http://localhost:8000/
+- Swagger del microservicio: http://localhost:3000/api-docs
+- Para la IA, crea un archivo `.env` en la raíz con `ANTHROPIC_API_KEY=...` antes de levantarlo.
+- Para apagarlo: `Ctrl + C` y luego `docker compose down`.
+
+### Solo el backend Django
 
 ```bash
 docker build -t duart-studio .
@@ -151,6 +206,15 @@ Copia `.env.example` como `.env` y completa los valores. El archivo `.env` nunca
 | `DATABASE_URL` | Conexión a PostgreSQL (si no se define, se usa SQLite) |
 | `CARGAR_DATOS_DEMO` | `True` para cargar los datos de demostración al arrancar el contenedor |
 | `DJANGO_ADMIN_PASSWORD` | Contraseña del administrador de demostración en producción |
+| `NODE_SERVICE_URL` | Dirección de Node vista desde Django, para el webhook (vacía = sin avisos) |
+| `NODE_PUBLIC_URL` | Dirección de Node vista desde el navegador, para el chat (vacía = sin chat) |
+| `SERVICIO_API_KEY` | Clave compartida para que Node lea la API de Django (igual en los dos servicios) |
+| `WEBHOOK_SECRET` | Secreto compartido del webhook y de los tokens de Socket.IO (igual en los dos servicios) |
+| `DJANGO_API_URL` | Dirección de Django vista desde Node |
+| `CORS_ORIGINS` | Orígenes del navegador que pueden usar el chat |
+| `ANTHROPIC_API_KEY` | Clave de la API de Claude para el asistente (opcional) |
+| `LLM_MODEL` | Modelo de IA (por defecto `claude-opus-5-5`) |
+| `WHATSAPP_NUMERO` | WhatsApp del taller, formato internacional sin `+` |
 
 ## Backlog
 

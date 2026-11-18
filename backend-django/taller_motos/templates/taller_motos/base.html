@@ -7,7 +7,7 @@
   <title>{% block titulo %}DUART-STUDIO{% endblock %}</title>
   <link rel="stylesheet" href="{% static 'taller_motos/estilos.css' %}">
 </head>
-<body>
+<body data-pagina="{% block pagina %}{% endblock %}">
   <header class="navbar">
     <a class="marca" href="{% url 'taller_motos:index' %}">🏍 DUART-STUDIO</a>
     <nav>
@@ -50,5 +50,35 @@
   <footer>
     DUART-STUDIO &middot; Pintura y personalización de motocicletas &middot; Tunjuelito, Bogotá &middot; Todos los derechos reservados
   </footer>
+
+  {% if node_public_url %}
+  {# Asistente virtual y avisos en tiempo real (microservicio Node.js, Entrega 3) #}
+  <div id="asistente" class="asistente" hidden>
+    <button id="asistente-abrir" class="asistente-boton" type="button" aria-expanded="false" aria-controls="asistente-panel">
+      💬 <span>Asistente</span>
+    </button>
+    <section id="asistente-panel" class="asistente-panel" hidden aria-label="Asistente virtual">
+      <header class="asistente-cabecera">
+        <strong>Asistente DUART-STUDIO</strong>
+        <button id="asistente-cerrar" type="button" aria-label="Cerrar">✕</button>
+      </header>
+      <div id="asistente-mensajes" class="asistente-mensajes" aria-live="polite"></div>
+      <form id="asistente-form" class="asistente-form">
+        <input id="asistente-texto" type="text" maxlength="500" autocomplete="off"
+               placeholder="Escribe tu pregunta o la placa de tu moto" aria-label="Mensaje">
+        <button type="submit">Enviar</button>
+      </form>
+    </section>
+  </div>
+  <div id="avisos" class="avisos" aria-live="assertive"></div>
+
+  <script id="config-node" type="application/json">{
+    "url": "{{ node_public_url|escapejs }}"{% if socket_token %},
+    "clienteId": "{{ socket_cliente_id }}",
+    "token": "{{ socket_token }}"{% endif %}
+  }</script>
+  <script src="{{ node_public_url }}/socket.io/socket.io.js" defer></script>
+  <script src="{% static 'taller_motos/asistente.js' %}" defer></script>
+  {% endif %}
 </body>
 </html>

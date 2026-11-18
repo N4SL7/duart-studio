@@ -1,0 +1,52 @@
+# DUART-STUDIO · Docker Compose (Entrega 3)
+# Levanta el backend Django y el microservicio Node.js con un solo comando:
+#   docker compose up --build
+# Sitio: http://localhost:8000   ·   Swagger: http://localhost:3000/api-docs
+#
+# Las claves se leen del archivo .env de la raíz (copia .env.example). Si no existe,
+# se usan los valores de desarrollo indicados después de ":-".
+
+services:
+  django:
+    build: .
+    container_name: duart-django
+    ports:
+      - "8000:8000"
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-solo-para-desarrollo-cambiar-en-produccion}
+      DJANGO_DEBUG: "True"  # en local se usa HTTP; en producción (Render) va False con HTTPS
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1,django
+      CARGAR_DATOS_DEMO: "True"
+      # Integración Django -> Node.js
+      NODE_SERVICE_URL: http://node:3000          # dentro de la red de Docker
+      NODE_PUBLIC_URL: http://localhost:3000      # desde el navegador
+      SERVICIO_API_KEY: ${SERVICIO_API_KEY:-clave-servicio-desarrollo}
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET:-secreto-webhook-desarrollo}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/servicios/', timeout=4)"]
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+    restart: unless-stopped
+
+  node:
+    build: ./servicio-node
+    container_name: duart-node
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: "3000"
+      DJANGO_API_URL: http://django:8000          # Node lee la API REST de Django
+      SITIO_PUBLICO_URL: http://localhost:8000
+      CORS_ORIGINS: http://localhost:8000,http://127.0.0.1:8000
+      SERVICIO_API_KEY: ${SERVICIO_API_KEY:-clave-servicio-desarrollo}
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET:-secreto-webhook-desarrollo}
+      # IA generativa: sin clave, el asistente responde solo con preguntas frecuentes.
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-claude-opus-5-5}
+      WHATSAPP_NUMERO: ${WHATSAPP_NUMERO:-573000000000}
+    depends_on:
+      django:
+        condition: service_healthy
+    restart: unless-stopped

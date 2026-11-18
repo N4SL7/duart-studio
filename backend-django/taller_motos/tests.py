@@ -255,3 +255,89 @@ class ServicioYCitaAdminTests(TestCase):
         self.client.post(reverse("taller_motos:cita_list"), {"cita_id": cita.id, "estado": "confirmada"})
         cita.refresh_from_db()
         self.assertEqual(cita.estado, Cita.Estado.CONFIRMADA)
+
+
+# --- Entrega 3: API REST para Node.js e integración Django → Node.js ---
+
+from unittest import mock  # noqa: E402
+
+from django.test import override_settings  # noqa: E402
+
+from . import notificaciones  # noqa: E402
+
+
+@override_settings(SERVICIO_API_KEY="clave-prueba", WEBHOOK_SECRET="secreto-prueba", NODE_SERVICE_URL="http://node:3000")
+class ApiParaNodeTests(TestCase):
+    fixtures = ["datos_iniciales"]
+
+    def setUp(self):
+        self.cliente = crear_usuario("cliente@correo.co", CLIENTE)
+        self.vehiculo = Vehiculo.objects.create(cliente=self.cliente, marca="Yamaha", modelo="MT-03", placa="ABC12D")
+
+    def test_servicios_es_publico(self):
+        datos = self.client.get(reverse("taller_motos:api_servicios")).json()
+        self.assertTrue(datos["servicios"])
+        self.assertEqual(set(datos["servicios"][0]), {"id", "nombre", "descripcion", "precio", "duracion_estimada"})
+
+    def test_estado_exige_clave_de_servicio(self):
+        url = reverse("taller_motos:api_estado_vehiculo", args=["ABC12D"])
+        self.assertEqual(self.client.get(url).status_code, 401)
+        self.assertEqual(self.client.get(url, headers={"X-API-Key": "otra"}).status_code, 401)
+
+    def test_estado_de_moto_sin_datos_personales(self):
+        self.vehiculo.cambiar_etapa("lijado")
+        url = reverse("taller_motos:api_estado_vehiculo", args=["abc-12d"])
+        datos = self.client.get(url, headers={"X-API-Key": "clave-prueba"}).json()
+        self.assertEqual(datos["etapa_nombre"], "Lijado")
+        self.assertEqual((datos["paso"], datos["total_pasos"]), (2, 5))
+        self.assertNotIn("cliente", datos)
+        self.assertNotIn("cliente@correo.co", str(datos))
+
+    def test_placa_inexistente_da_404(self):
+        url = reverse("taller_motos:api_estado_vehiculo", args=["ZZZ99Z"])
+        self.assertEqual(self.client.get(url, headers={"X-API-Key": "clave-prueba"}).status_code, 404)
+
+    def test_cambio_de_etapa_envia_webhook_a_node(self):
+        with mock.patch.object(notificaciones, "enviar_webhook") as enviar, \
+                mock.patch.object(notificaciones.threading, "Thread") as hilo:
+            hilo.side_effect = lambda target, args, daemon: mock.Mock(start=lambda: target(*args))
+            with self.captureOnCommitCallbacks(execute=True):
+                self.vehiculo.cambiar_etapa("alistamiento")
+        aviso = enviar.call_args.args[0]
+        self.assertEqual(aviso["cliente_id"], str(self.cliente.id))
+        self.assertEqual(aviso["placa"], "ABC12D")
+        self.assertEqual(aviso["etapa_nombre"], "Alistamiento")
+        self.assertEqual(aviso["etapa_anterior_nombre"], "Pendiente de ingreso")
+
+    @override_settings(NODE_SERVICE_URL="")
+    def test_sin_node_configurado_no_se_envia_nada(self):
+        with mock.patch.object(notificaciones, "enviar_webhook") as enviar:
+            with self.captureOnCommitCallbacks(execute=True):
+                self.vehiculo.cambiar_etapa("alistamiento")
+        enviar.assert_not_called()
+
+    def test_si_node_esta_caido_el_cambio_de_etapa_igual_se_guarda(self):
+        with mock.patch.object(notificaciones.urllib.request, "urlopen", side_effect=OSError("conexión rechazada")):
+            self.assertFalse(notificaciones.enviar_webhook({"placa": "ABC12D"}))
+        self.vehiculo.cambiar_etapa("alistamiento")
+        self.vehiculo.refresh_from_db()
+        self.assertEqual(self.vehiculo.etapa, "alistamiento")
+
+    def test_token_del_cliente_coincide_con_el_de_node(self):
+        # Mismo cálculo que firmarCliente('7', 'secreto-prueba') en servicio-node.
+        import hashlib
+        import hmac
+        esperado = hmac.new(b"secreto-prueba", b"cliente:7", hashlib.sha256).hexdigest()
+        self.assertEqual(notificaciones.token_cliente(7), esperado)
+
+    def test_el_cliente_recibe_su_token_y_el_chat_en_la_pagina(self):
+        self.client.force_login(self.cliente)
+        respuesta = self.client.get(reverse("taller_motos:mi_proceso"))
+        self.assertContains(respuesta, notificaciones.token_cliente(self.cliente.id))
+        self.assertContains(respuesta, "/socket.io/socket.io.js")
+        self.assertContains(respuesta, 'data-pagina="mi-proceso"')
+
+    def test_el_visitante_ve_el_chat_pero_sin_token(self):
+        respuesta = self.client.get(reverse("taller_motos:index"))
+        self.assertContains(respuesta, 'id="asistente"')
+        self.assertNotContains(respuesta, '"token"')

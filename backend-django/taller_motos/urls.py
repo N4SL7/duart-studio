@@ -1,11 +1,15 @@
 from django.contrib.auth.views import LogoutView
 from django.urls import path
 
-from . import views
+from . import api, views
 
 app_name = "taller_motos"
 
 urlpatterns = [
+    # API REST interna que consume el microservicio Node.js (Entrega 3)
+    path("api/servicios/", api.servicios, name="api_servicios"),
+    path("api/vehiculos/<str:placa>/estado/", api.estado_vehiculo, name="api_estado_vehiculo"),
+
     # Sitio público
     path("", views.index, name="index"),
     path("servicio/<int:servicio_id>/", views.servicio_detail, name="servicio_detail"),
