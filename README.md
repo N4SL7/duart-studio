@@ -32,7 +32,7 @@ Plataforma web para **DUART-STUDIO**, un taller de pintura y personalización de
 |---|---|---|
 | Backend | Django | Apps del taller, Django Admin, autenticación y API REST interna (JSON) para Node.js |
 | Microservicio | Node.js + Express + Socket.IO | Asistente virtual, notificaciones de cambio de etapa en tiempo real y API documentada con Swagger |
-| IA | Motor de intenciones + Claude (Anthropic) | Preguntas frecuentes primero; si no reconoce la pregunta, responde la IA generativa |
+| IA | Motor de intenciones + Google Gemini | Preguntas frecuentes primero; si no reconoce la pregunta, responde la IA generativa (Claude como alternativa) |
 | Base de datos | SQLite (desarrollo) / PostgreSQL en Neon (producción) | Solo Django escribe; Node.js lee por la API REST |
 | Contenedores | Docker + Docker Compose | Un Dockerfile por servicio; `docker compose up` levanta Django y Node.js juntos |
 | Despliegue | GitHub + Render + Neon | Cada push a `main` reconstruye el contenedor en Render, con HTTPS; base de datos PostgreSQL en Neon |
@@ -75,15 +75,15 @@ Diagramas completos en [`docs/uml/`](docs/uml): casos de uso, componentes, despl
 ```
 Navegador ──HTTP──> Django :8000 ──webhook (cambio de etapa)──> Node.js :3000
     │                  ▲                                          │   ├─ Swagger /api-docs
-    └──WebSocket───────┼──────────────────────────────────────────┘   ├─ Asistente ──> Claude (IA)
+    └──WebSocket───────┼──────────────────────────────────────────┘   ├─ Asistente ──> Gemini (IA)
      (chat y avisos)   └────────── API REST (servicios, estado de moto) ┘
 ```
 
 | Funcionalidad | Requisitos | Dónde |
 |---|---|---|
-| **Microservicio Node.js** (Express + Socket.IO) con 21 pruebas automáticas | RF-03, RF-12 | [`servicio-node/`](servicio-node) |
+| **Microservicio Node.js** (Express + Socket.IO) con 23 pruebas automáticas | RF-03, RF-12 | [`servicio-node/`](servicio-node) |
 | **Swagger / OpenAPI 3** con todos los endpoints, esquemas y ejemplos | — | http://localhost:3000/api-docs |
-| **Asistente virtual**: 1) estado de la moto por placa, 2) preguntas frecuentes (motor de intenciones), 3) IA generativa (Claude) si no reconoce la pregunta, 4) WhatsApp si la IA no está disponible | RF-03, RF-04 | Botón 💬 en todas las páginas |
+| **Asistente virtual**: 1) estado de la moto por placa, 2) preguntas frecuentes (motor de intenciones), 3) IA generativa (Google Gemini) si no reconoce la pregunta, 4) WhatsApp si la IA no está disponible | RF-03, RF-04 | Botón 💬 en todas las páginas |
 | **Integración Django → Node.js**: al cambiar la etapa, Django envía un webhook firmado y Node avisa al cliente en tiempo real (solo al dueño de la moto, con token HMAC) | RF-12, RF-13 | Aviso 🔔 en el sitio y Mi Proceso se actualiza solo |
 | **Integración Node.js → Django**: Node lee servicios y estado de motos por la API REST de Django (con clave de servicio y sin datos personales) | — | `/api/servicios/`, `/api/vehiculos/<placa>/estado/` |
 | **Docker Compose**: Django + Node.js con healthchecks y red interna | — | [`docker-compose.yml`](docker-compose.yml) |
@@ -162,7 +162,7 @@ npm start          # http://localhost:3000/api-docs
 npm test           # pruebas del microservicio
 ```
 
-Para que el asistente use IA generativa, define `ANTHROPIC_API_KEY` antes de `npm start` (en PowerShell: `$env:ANTHROPIC_API_KEY="..."`). Sin clave, responde con las preguntas frecuentes y deriva a WhatsApp.
+Para que el asistente use IA generativa, crea una clave gratis de Google Gemini en https://aistudio.google.com/apikey y defínela antes de `npm start` (en PowerShell: `$env:GEMINI_API_KEY="..."`). Sin clave, responde con las preguntas frecuentes y deriva a WhatsApp.
 
 ## Cómo ejecutarlo con Docker Compose (Django + Node.js)
 
@@ -174,7 +174,7 @@ docker compose up --build
 
 - Sitio: http://localhost:8000/
 - Swagger del microservicio: http://localhost:3000/api-docs
-- Para la IA, crea un archivo `.env` en la raíz con `ANTHROPIC_API_KEY=...` antes de levantarlo.
+- Para la IA, crea un archivo `.env` en la raíz con `GEMINI_API_KEY=...` antes de levantarlo.
 - Para apagarlo: `Ctrl + C` y luego `docker compose down`.
 
 ### Solo el backend Django
@@ -212,8 +212,9 @@ Copia `.env.example` como `.env` y completa los valores. El archivo `.env` nunca
 | `WEBHOOK_SECRET` | Secreto compartido del webhook y de los tokens de Socket.IO (igual en los dos servicios) |
 | `DJANGO_API_URL` | Dirección de Django vista desde Node |
 | `CORS_ORIGINS` | Orígenes del navegador que pueden usar el chat |
-| `ANTHROPIC_API_KEY` | Clave de la API de Claude para el asistente (opcional) |
-| `LLM_MODEL` | Modelo de IA (por defecto `claude-opus-5-5`) |
+| `GEMINI_API_KEY` | Clave de Google Gemini para el asistente (gratis en aistudio.google.com) |
+| `ANTHROPIC_API_KEY` | Alternativa: clave de la API de Claude |
+| `LLM_PROVIDER` / `LLM_MODEL` | Opcional: forzar proveedor (`gemini` o `anthropic`) o modelo (por defecto `gemini-3.8-flash`) |
 | `WHATSAPP_NUMERO` | WhatsApp del taller, formato internacional sin `+` |
 
 ## Backlog

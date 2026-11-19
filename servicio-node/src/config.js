@@ -8,7 +8,19 @@ function lista(valor, porDefecto) {
     .filter(Boolean);
 }
 
+const MODELO_POR_DEFECTO = { gemini: 'gemini-3.8-flash', anthropic: 'claude-opus-5-5' };
+
+// Proveedor de IA: el indicado en LLM_PROVIDER, o el de la clave que esté configurada (Gemini primero).
+function elegirProveedor(env) {
+  const pedido = (env.LLM_PROVIDER || '').toLowerCase();
+  if (pedido in MODELO_POR_DEFECTO) return pedido;
+  if (env.GEMINI_API_KEY) return 'gemini';
+  if (env.ANTHROPIC_API_KEY) return 'anthropic';
+  return 'gemini';
+}
+
 export function cargarConfig(env = process.env) {
+  const llmProveedor = elegirProveedor(env);
   return {
     puerto: Number(env.PORT || 3000),
 
@@ -22,9 +34,11 @@ export function cargarConfig(env = process.env) {
     // Orígenes del navegador que pueden usar el chat y las notificaciones (CORS).
     origenesPermitidos: lista(env.CORS_ORIGINS, 'http://127.0.0.1:8000,http://localhost:8000'),
 
-    // IA generativa (Claude). Sin ANTHROPIC_API_KEY el asistente responde solo con preguntas frecuentes.
+    // IA generativa. Sin clave, el asistente responde solo con preguntas frecuentes y WhatsApp.
+    llmProveedor,
+    geminiApiKey: env.GEMINI_API_KEY || '',
     anthropicApiKey: env.ANTHROPIC_API_KEY || '',
-    llmModelo: env.LLM_MODEL || 'claude-opus-5-5',
+    llmModelo: env.LLM_MODEL || MODELO_POR_DEFECTO[llmProveedor],
     llmTimeoutMs: Number(env.LLM_TIMEOUT_MS || 30000),
 
     // WhatsApp del taller para cotizaciones y atención humana (formato internacional sin "+").

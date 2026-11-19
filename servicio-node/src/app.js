@@ -40,6 +40,7 @@ export function crearServidor({ config = cargarConfig(), django, ia } = {}) {
       servicio: 'duart-studio-servicio-node',
       django_disponible: await django.disponible(),
       ia_configurada: ia.habilitado,
+      proveedor_ia: ia.proveedor,
       modelo_ia: ia.modelo,
       clientes_conectados: io.engine.clientsCount,
     });

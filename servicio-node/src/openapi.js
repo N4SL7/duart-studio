@@ -10,7 +10,7 @@ export function crearEspecificacion({ servidorUrl } = {}) {
       description:
         'Asistente virtual con IA, notificaciones de cambio de etapa en tiempo real y comunicación con el backend Django.\n\n' +
         '**Flujo del asistente:** 1) si el mensaje trae una placa, consulta el estado de la moto en Django; ' +
-        '2) si es una pregunta frecuente, responde el motor de intenciones; 3) si no la reconoce, responde la IA (Claude); ' +
+        '2) si es una pregunta frecuente, responde el motor de intenciones; 3) si no la reconoce, responde la IA generativa (Google Gemini); ' +
         '4) si la IA no está disponible, deriva a WhatsApp.\n\n' +
         '**WebSocket (Socket.IO):** el navegador emite `chat:mensaje` y recibe `chat:respuesta`; ' +
         'para recibir avisos emite `cliente:unirse` con `{cliente_id, token}` y escucha `etapa:cambio`.',
@@ -196,7 +196,8 @@ export function crearEspecificacion({ servidorUrl } = {}) {
             servicio: { type: 'string', example: 'duart-studio-servicio-node' },
             django_disponible: { type: 'boolean' },
             ia_configurada: { type: 'boolean' },
-            modelo_ia: { type: 'string', example: 'claude-opus-5-5' },
+            proveedor_ia: { type: 'string', enum: ['gemini', 'anthropic'], example: 'gemini' },
+            modelo_ia: { type: 'string', example: 'gemini-3.8-flash' },
             clientes_conectados: { type: 'integer' },
           },
         },
@@ -211,7 +212,7 @@ export function crearEspecificacion({ servidorUrl } = {}) {
             respuesta: { type: 'string' },
             fuente: { type: 'string', enum: ['estado_moto', 'intencion', 'ia', 'respaldo'] },
             intencion: { type: 'string', description: 'Solo si fuente = intencion', example: 'horario' },
-            modelo: { type: 'string', description: 'Solo si fuente = ia', example: 'claude-opus-5-5' },
+            modelo: { type: 'string', description: 'Solo si fuente = ia', example: 'gemini-3.8-flash' },
             whatsapp: { type: 'string', description: 'Enlace para continuar por WhatsApp', example: 'https://wa.me/573000000000?text=...' },
             vehiculo: { $ref: '#/components/schemas/EstadoVehiculo' },
           },

@@ -42,9 +42,12 @@ services:
       CORS_ORIGINS: http://localhost:8000,http://127.0.0.1:8000
       SERVICIO_API_KEY: ${SERVICIO_API_KEY:-clave-servicio-desarrollo}
       WEBHOOK_SECRET: ${WEBHOOK_SECRET:-secreto-webhook-desarrollo}
-      # IA generativa: sin clave, el asistente responde solo con preguntas frecuentes.
+      # IA generativa: Google Gemini (GEMINI_API_KEY, gratis en aistudio.google.com) o Claude (ANTHROPIC_API_KEY).
+      # Sin clave, el asistente responde solo con preguntas frecuentes y WhatsApp.
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      LLM_MODEL: ${LLM_MODEL:-claude-opus-5-5}
+      LLM_PROVIDER: ${LLM_PROVIDER:-}
+      LLM_MODEL: ${LLM_MODEL:-}
       WHATSAPP_NUMERO: ${WHATSAPP_NUMERO:-573000000000}
     depends_on:
       django:

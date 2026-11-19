@@ -8,7 +8,8 @@ const { servidorHttp } = crearServidor({ config });
 servidorHttp.listen(config.puerto, () => {
   console.log(`Microservicio DUART-STUDIO escuchando en http://localhost:${config.puerto}`);
   console.log(`Swagger: http://localhost:${config.puerto}/api-docs`);
-  console.log(`Django: ${config.djangoUrl} · IA: ${config.anthropicApiKey ? config.llmModelo : 'sin configurar (solo preguntas frecuentes)'}`);
+  const claveIA = config.llmProveedor === 'gemini' ? config.geminiApiKey : config.anthropicApiKey;
+  console.log(`Django: ${config.djangoUrl} · IA: ${claveIA ? `${config.llmProveedor} (${config.llmModelo})` : 'sin configurar (solo preguntas frecuentes)'}`);
 });
 
 function apagar(senal) {
