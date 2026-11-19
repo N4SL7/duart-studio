@@ -27,38 +27,63 @@ Datos del taller:
 Si la pregunta pide una cotización exacta, un diagnóstico o algo que no sabes con certeza, dilo con honestidad y sugiere escribir por WhatsApp al taller. Si la pregunta no tiene relación con motos ni con el taller, explica amablemente que solo puedes ayudar con temas de DUART-STUDIO.`;
 }
 
+// El chat muestra texto plano: se quitan las marcas de Markdown que a veces devuelve el modelo.
+export function limpiarMarkdown(texto) {
+  return texto
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/__(.+?)__/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/^\s*[*-]\s+/gm, '• ')
+    .trim();
+}
+
+// Errores de saturación o caída momentánea: vale la pena probar con el modelo de respaldo.
+const ESTADOS_REINTENTABLES = new Set([429, 500, 502, 503, 504]);
+
 // --- Google Gemini ---
 function proveedorGemini(config, cliente) {
   const ai = cliente ?? new GoogleGenAI({ apiKey: config.geminiApiKey });
+  const modelos = [config.llmModelo, ...config.llmModelosRespaldo.filter((m) => m !== config.llmModelo)];
+
+  async function preguntar(modelo, pregunta, servicios) {
+    const respuesta = await ai.models.generateContent({
+      model: modelo,
+      contents: pregunta,
+      config: {
+        systemInstruction: instrucciones(servicios, config),
+        maxOutputTokens: 2048,
+        httpOptions: { timeout: config.llmTimeoutMs },
+      },
+    });
+    const texto = limpiarMarkdown(respuesta.text ?? '');
+    if (texto) return { texto };
+    // Sin texto: el filtro de seguridad bloqueó la pregunta o la respuesta.
+    return { error: respuesta.promptFeedback?.blockReason ? 'rechazada' : 'vacia' };
+  }
+
   return async (pregunta, servicios = []) => {
-    try {
-      const respuesta = await ai.models.generateContent({
-        model: config.llmModelo,
-        contents: pregunta,
-        config: {
-          systemInstruction: instrucciones(servicios, config),
-          maxOutputTokens: 2048,
-          httpOptions: { timeout: config.llmTimeoutMs },
-        },
-      });
-      const texto = (respuesta.text ?? '').trim();
-      if (texto) return { texto };
-      // Sin texto: el filtro de seguridad bloqueó la pregunta o la respuesta.
-      return { error: respuesta.promptFeedback?.blockReason ? 'rechazada' : 'vacia' };
-    } catch (error) {
-      if (error instanceof ApiError) {
-        console.error(`[IA] Error de Gemini (${error.status}): ${error.message}`);
-        if (error.status === 400 || error.status === 401 || error.status === 403) return { error: 'autenticacion' };
-        if (error.status === 429) return { error: 'limite' };
-        return { error: 'api' };
+    let ultimoError = 'desconocido';
+    for (const modelo of modelos) {
+      try {
+        return await preguntar(modelo, pregunta, servicios);
+      } catch (error) {
+        if (error instanceof ApiError) {
+          console.error(`[IA] Error de Gemini con ${modelo} (${error.status}): ${String(error.message).slice(0, 200)}`);
+          if (error.status === 400 || error.status === 401 || error.status === 403) return { error: 'autenticacion' };
+          ultimoError = error.status === 429 ? 'limite' : 'api';
+          if (ESTADOS_REINTENTABLES.has(error.status)) continue; // prueba con el siguiente modelo
+          return { error: ultimoError };
+        }
+        if (error?.name === 'AbortError' || error?.name === 'TimeoutError') {
+          console.error(`[IA] Tiempo de espera agotado con ${modelo}`);
+          ultimoError = 'tiempo';
+          continue;
+        }
+        console.error('[IA] Error inesperado:', error);
+        return { error: 'desconocido' };
       }
-      if (error?.name === 'AbortError' || error?.name === 'TimeoutError') {
-        console.error('[IA] Tiempo de espera agotado');
-        return { error: 'tiempo' };
-      }
-      console.error('[IA] Error inesperado:', error);
-      return { error: 'desconocido' };
     }
+    return { error: ultimoError };
   };
 }
 

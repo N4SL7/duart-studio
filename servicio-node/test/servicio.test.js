@@ -77,6 +77,9 @@ describe('Motor de intenciones', () => {
     assert.equal(detectarIntencion('quiero una cotización con diseño').id, 'cotizacion');
     assert.equal(detectarIntencion('Hola').id, 'saludo');
     assert.equal(detectarIntencion('¿qué color combina con el negro mate?'), null);
+    assert.equal(detectarIntencion('¿Cada cuánto debo encerar la moto?'), null);
+    assert.equal(detectarIntencion('¿Cuánto vale una pintura completa?').id, 'servicios');
+    assert.equal(detectarIntencion('¿Cuánto tiempo se demoran?').id, 'tiempo');
   });
 });
 

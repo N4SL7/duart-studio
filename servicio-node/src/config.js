@@ -8,7 +8,10 @@ function lista(valor, porDefecto) {
     .filter(Boolean);
 }
 
-const MODELO_POR_DEFECTO = { gemini: 'gemini-3.8-flash', anthropic: 'claude-opus-5-5' };
+// Gemini: se usa el modelo "lite" porque responde en 1-2 s y tiene más cupo en el plan gratuito
+// (los modelos grandes suelen estar saturados). Si el principal falla, se prueba el de respaldo.
+const MODELO_POR_DEFECTO = { gemini: 'gemini-3.5-flash-lite', anthropic: 'claude-opus-5-5' };
+const RESPALDO_POR_DEFECTO = { gemini: 'gemini-3.1-flash-lite', anthropic: '' };
 
 // Proveedor de IA: el indicado en LLM_PROVIDER, o el de la clave que esté configurada (Gemini primero).
 function elegirProveedor(env) {
@@ -39,7 +42,8 @@ export function cargarConfig(env = process.env) {
     geminiApiKey: env.GEMINI_API_KEY || '',
     anthropicApiKey: env.ANTHROPIC_API_KEY || '',
     llmModelo: env.LLM_MODEL || MODELO_POR_DEFECTO[llmProveedor],
-    llmTimeoutMs: Number(env.LLM_TIMEOUT_MS || 30000),
+    llmModelosRespaldo: lista(env.LLM_MODELOS_RESPALDO, RESPALDO_POR_DEFECTO[llmProveedor]),
+    llmTimeoutMs: Number(env.LLM_TIMEOUT_MS || 20000),
 
     // WhatsApp del taller para cotizaciones y atención humana (formato internacional sin "+").
     whatsappNumero: env.WHATSAPP_NUMERO || '573000000000',

@@ -52,7 +52,7 @@ export const INTENCIONES = [
   {
     id: 'servicios',
     descripcion: 'Servicios y precios de referencia (consulta la API de Django)',
-    palabras: ['precio', 'precios', 'cuanto', 'cuesta', 'vale', 'valor', 'servicio', 'servicios', 'hacen', 'ofrecen', 'tarifa'],
+    palabras: ['precio', 'precios', 'cuesta', 'cuestan', 'vale', 'valor', 'servicio', 'servicios', 'ofrecen', 'tarifa', 'cobran'],
     responder: async ({ django }) => {
       const servicios = await django.servicios();
       if (!servicios.length) return 'En este momento no pude consultar los servicios. Intenta de nuevo en un momento.';
@@ -74,7 +74,7 @@ export const INTENCIONES = [
   {
     id: 'tiempo',
     descripcion: 'Cuánto se demora un trabajo',
-    palabras: ['demora', 'demoran', 'tiempo', 'dias', 'tarda', 'tardan', 'cuando esta lista', 'entrega'],
+    palabras: ['demora', 'demoran', 'tarda', 'tardan', 'cuanto tiempo', 'cuando esta lista', 'entregan'],
     responder: () =>
       'Depende del trabajo: un retoque y pulido toma de 1 a 2 días, una pintura completa de 5 a 7 días y ' +
       'una personalización con diseño de 7 a 10 días. Si ya dejaste tu moto, escríbeme la placa y te digo en qué etapa va.',

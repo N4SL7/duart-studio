@@ -19,7 +19,7 @@ function silenciarErrores(fn) {
 
 test('elige Gemini si hay GEMINI_API_KEY y Claude si solo hay ANTHROPIC_API_KEY', () => {
   assert.equal(cargarConfig({ GEMINI_API_KEY: 'g' }).llmProveedor, 'gemini');
-  assert.equal(cargarConfig({ GEMINI_API_KEY: 'g' }).llmModelo, 'gemini-3.8-flash');
+  assert.equal(cargarConfig({ GEMINI_API_KEY: 'g' }).llmModelo, 'gemini-3.5-flash-lite');
   assert.equal(cargarConfig({ ANTHROPIC_API_KEY: 'a' }).llmProveedor, 'anthropic');
   assert.equal(cargarConfig({ ANTHROPIC_API_KEY: 'a' }).llmModelo, 'claude-opus-5-5');
   assert.equal(cargarConfig({ GEMINI_API_KEY: 'g', LLM_MODEL: 'otro-modelo' }).llmModelo, 'otro-modelo');
@@ -49,11 +49,11 @@ test('Gemini: envía la pregunta con las instrucciones del taller y los servicio
 
   assert.deepEqual(resultado, { texto: 'Te recomiendo un gris mate.' });
   const params = falso.llamadas[0];
-  assert.equal(params.model, 'gemini-3.8-flash');
+  assert.equal(params.model, 'gemini-3.5-flash-lite');
   assert.equal(params.contents, '¿Qué color me recomiendas?');
   assert.match(params.config.systemInstruction, /DUART-STUDIO/);
   assert.match(params.config.systemInstruction, /Retoque y pulido: desde \$250\.000 COP/);
-  assert.equal(params.config.httpOptions.timeout, 30000);
+  assert.equal(params.config.httpOptions.timeout, 20000);
 });
 
 test('Gemini: si el filtro de seguridad bloquea la pregunta, no devuelve texto', async () => {
@@ -101,4 +101,26 @@ test('Claude: rechazo y errores se convierten en códigos', async () => {
   await silenciarErrores(async () => {
     assert.deepEqual(await crearClienteIA(configClaude, { anthropic: tiempo }).responder('x'), { error: 'tiempo' });
   });
+});
+
+test('Gemini: si el modelo principal está saturado, responde el modelo de respaldo', async () => {
+  const falso = geminiFalso(({ model }) => {
+    if (model === 'gemini-3.5-flash-lite') throw new ApiError({ message: 'high demand', status: 503 });
+    return { text: 'Respuesta del modelo de respaldo.' };
+  });
+  const resultado = await silenciarErrores(() => crearClienteIA(configGemini, { gemini: falso }).responder('x'));
+  assert.deepEqual(resultado, { texto: 'Respuesta del modelo de respaldo.' });
+  assert.deepEqual(falso.llamadas.map((p) => p.model), ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite']);
+});
+
+test('Gemini: si todos los modelos están saturados, devuelve error (el asistente deriva a WhatsApp)', async () => {
+  const falso = geminiFalso(() => { throw new ApiError({ message: 'high demand', status: 503 }); });
+  const resultado = await silenciarErrores(() => crearClienteIA(configGemini, { gemini: falso }).responder('x'));
+  assert.deepEqual(resultado, { error: 'api' });
+});
+
+test('quita el formato Markdown porque el chat muestra texto plano', async () => {
+  const falso = geminiFalso(() => ({ text: 'Le queda el **rojo**:\n* contraste\n* estilo' }));
+  const { texto } = await crearClienteIA(configGemini, { gemini: falso }).responder('x');
+  assert.equal(texto, 'Le queda el rojo:\n• contraste\n• estilo');
 });

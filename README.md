@@ -214,7 +214,7 @@ Copia `.env.example` como `.env` y completa los valores. El archivo `.env` nunca
 | `CORS_ORIGINS` | Orígenes del navegador que pueden usar el chat |
 | `GEMINI_API_KEY` | Clave de Google Gemini para el asistente (gratis en aistudio.google.com) |
 | `ANTHROPIC_API_KEY` | Alternativa: clave de la API de Claude |
-| `LLM_PROVIDER` / `LLM_MODEL` | Opcional: forzar proveedor (`gemini` o `anthropic`) o modelo (por defecto `gemini-3.8-flash`) |
+| `LLM_PROVIDER` / `LLM_MODEL` | Opcional: forzar proveedor (`gemini` o `anthropic`) o modelo (por defecto `gemini-3.5-flash-lite`) |
 | `WHATSAPP_NUMERO` | WhatsApp del taller, formato internacional sin `+` |
 
 ## Backlog
